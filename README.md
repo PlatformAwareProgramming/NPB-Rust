@@ -1,6 +1,28 @@
 # NPB-Rust
 NAS Parallel Benchmarks in Rust 
 
+*This is a repository aimed at providing parallel codes with different Rust parallel programming APIs for the NAS Parallel Benchmarks (NPB). You can also contribute to this project by writing issues and pull requests.*
+
+	===================================================================
+	This project was conducted in the Parallel Applications
+	Modelling Group (GMAP) at PUCRS - Brazil.
+	
+	Project leader:
+		Dalvan Griebler (PUCRS)
+	
+	Code contributors: 
+		Eduardo Martins (PUCRS)
+	
+	In case of questions or problems, please send an e-mail to us:	
+		dalvan.griebler@pucrs.br
+  		e.martins01@edu.pucrs.br
+		
+	We would like to thank the following researchers for the fruitful discussions:
+		Renato B. Hoffmann (PUCRS)
+	 	Leonardo G. Faé (PUCRS)
+	  	Lucas Bianchessi (PUCRS)
+      	
+	===================================================================
 
 ## Folders inside the project:
 
