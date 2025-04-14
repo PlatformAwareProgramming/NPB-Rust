@@ -1,4 +1,5 @@
 # NPB-Rust
+
 NAS Parallel Benchmarks in Rust 
 
 *This is a repository aimed at providing parallel codes with different Rust parallel programming APIs for the NAS Parallel Benchmarks (NPB). You can also contribute to this project by writing issues and pull requests.*
@@ -24,11 +25,17 @@ NAS Parallel Benchmarks in Rust
       	
 	===================================================================
 
-## Folders inside the project:
+
+## Folders inside the project
 
 NPB-RUST - This directory contains the sequential version.
 
 NPB-RAYON - This directory contains the parallel version implemented with Rayon.
+
+
+## Software requirements
+
+Rust Toolchain version 1.85.0 or higher
 
 
 ## How to compile
@@ -38,7 +45,6 @@ Enter the directory from the version desired and execute:
 ```
 RUSTFLAGS='--cfg class="_WORKLOAD"' cargo build --release
 ```
-
 
 _WORKLOADs are:
 
@@ -66,6 +72,7 @@ Command example:
 ```
 RUSTFLAGS='--cfg class="A"' cargo build --release --bin ep
 ```
+
 
 ## How to execute
 
@@ -100,6 +107,7 @@ CG - Conjugate Gradient, irregular memory accesses and communication
 FT - discrete 3D fast Fourier Transform, intensive long-distance communication
 IS - Integer Sort, integer computation and communication
 ```
+
 
 ### Pseudo-applications
 
