@@ -700,7 +700,14 @@ mod cg {
         }
         rowstr[0] = 0;
         for j in 1..nrows + 1 {
-            rowstr[j] += rowstr[j - 1]-
+            rowstr[j] += rowstr[j - 1]
+        }
+        nza = rowstr[nrows] - 1;
+
+        /*
+        * ---------------------------------------------------------------------
+        * ... rowstr(j) now is the location of the first nonzero
+        * of row j of a
         * ---------------------------------------------------------------------
         */
         if nza as usize > nz {
