@@ -38,6 +38,12 @@
 
 [dependencies]
 rayon = "1.10"
+platform-aware = { path = "../../platform-aware"}
+platform-aware-features = { path = "../../platform-aware/platform-aware-features"}
+platform-aware-amd = { path = "../../platform-aware/platform-aware-amd"}
+platform-aware-intel = { path = "../../platform-aware/platform-aware-intel"}
+platform-aware-nvidia = { path = "../../platform-aware/platform-aware-nvidia"}
+lazy_static = "1.5.0"
 
 [lints.rust]
  unexpected_cfgs = {level = "warn", check-cfg = ['cfg(class,values("S","W","A","B","C","D","E","F"))','cfg(safe,values("true"))','cfg(timers,values("true"))']}

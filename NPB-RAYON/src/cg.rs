@@ -4,7 +4,10 @@ fn main() {
     cg::main();
 }
 
-// #[!platformware(matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
+
+use platform_aware::{platformaware};
+
+#[platformaware(matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
 mod cg {
 
     use crate::common::print_results::*;
@@ -899,8 +902,8 @@ mod cg {
     }
 
     // y = a * x (sequential)
-    //#[kernelversion]
-    fn matvecmul_seq(
+    #[kernelversion]
+    fn matvecmul(
         colidx: &[i32],
         rowstr: &[i32], 
         a: &[f64],
@@ -921,7 +924,7 @@ mod cg {
         });    }
 
     // y = a * x (multithread)
-    //#[kernelversion]
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn matvecmul(
         colidx: &[i32],
         rowstr: &[i32], 
@@ -946,8 +949,8 @@ mod cg {
     }
 
     // x * y (single thread)
-    //#[kernelversion]
-    fn vecvecmul_seq(x: &[f64], y: &[f64]) -> f64 {
+    #[kernelversion]
+    fn vecvecmul(x: &[f64], y: &[f64]) -> f64 {
         (&x[0..(LASTCOL - FIRSTCOL + 1) as usize])
         .into_iter()
         .zip(&y[0..(LASTCOL - FIRSTCOL + 1) as usize])
@@ -956,7 +959,7 @@ mod cg {
     }
 
     // x * y (multithread)
-    //#[kernelversion]
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn vecvecmul(x: &[f64], y: &[f64]) -> f64 {
         (
             &x[0..(LASTCOL - FIRSTCOL + 1) as usize],
@@ -968,8 +971,8 @@ mod cg {
     }
 
     // y = y + alpha * x  (single thread)
-    //#[kernelversion] 
-    fn scalarvecmul2_seq(alpha:f64, x: &[f64], y: &mut [f64]) {
+    #[kernelversion]
+    fn scalarvecmul2(alpha:f64, x: &[f64], y: &mut [f64]) {
         for j in 0..(LASTCOL - FIRSTCOL + 1) as usize {
             y[j] += alpha * x[j];
         }
@@ -977,7 +980,7 @@ mod cg {
     }
 
     // y = y + alpha * x   (multithread)
-    //#[kernelversion]
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn scalarvecmul2(alpha:f64, x: &[f64], y: &mut [f64]) {
             (
                 &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
@@ -990,15 +993,15 @@ mod cg {
     }
 
     // y = x + alpha * y  (single thread)
-    //#[kernelversion]
-    fn scalarvecmul1_seq(alpha:f64, x: &[f64], y: &mut [f64]) {
+    #[kernelversion]
+    fn scalarvecmul1(alpha:f64, x: &[f64], y: &mut [f64]) {
         for j in 0..(LASTCOL - FIRSTCOL + 1) as usize {
             y[j] = x[j] + alpha * y[j];
         }
     }
 
     // y = x + alpha * y (multithread)
-    //#[kernelversion]
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn scalarvecmul1(alpha:f64, x: &[f64], y: &mut [f64]) {
         (
             &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
@@ -1011,8 +1014,8 @@ mod cg {
     }
 
 
-    //#[kernelversion] 
-    fn norm_seq(x: &[f64], y: &[f64]) -> f64 {
+    #[kernelversion]
+    fn norm(x: &[f64], y: &[f64]) -> f64 {
         let sum = (&x[0..(LASTCOL - FIRSTCOL + 1) as usize])
             .into_iter()
             .zip(&y[0..(LASTCOL - FIRSTCOL + 1) as usize])
@@ -1025,7 +1028,7 @@ mod cg {
         f64::sqrt(sum)
     }
 
-    //#[kernelversion] 
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn norm(x: &[f64], y: &[f64]) -> f64 {
         let sum = (
             &x[0..(LASTCOL - FIRSTCOL + 1) as usize],
@@ -1038,7 +1041,7 @@ mod cg {
             })
             .sum();
 
-            f64::sqrt(sum)        
+        f64::sqrt(sum)   
     }
 
 }
