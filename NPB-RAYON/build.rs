@@ -1,0 +1,48 @@
+use std::process::Command;
+use std::env;
+
+fn main() {
+    // Define o diretório onde o Makefile está localizado
+    let kernel_dir = "src/kernels";
+
+    // Executa o Makefile para compilar a biblioteca C
+    let make_status = Command::new("make")
+        .arg("-C") // Altera o diretório antes de executar o make
+        .arg(kernel_dir)
+        .status(); // Executa o comando e espera por ele
+
+    match make_status {
+        Ok(status) => {
+            if !status.success() {
+                panic!("Makefile failed with status: {}", status);
+            }
+        }
+        Err(e) => {
+            panic!("Failed to execute make: {}", e);
+        }
+    }
+
+    // Informa ao Cargo para linkar a biblioteca C
+    // O nome da biblioteca deve ser o nome do arquivo sem o prefixo 'lib' e a extensão (.so)
+    // Por exemplo, para libdot_product.so, o nome é dot_product
+    println!("cargo:rustc-link-lib=dot_product");
+
+    // Informa ao Cargo onde encontrar a biblioteca para linkar
+    // Este é o diretório onde o Makefile gera a libdot_product.so
+    let library_dir = env::current_dir().unwrap().join(kernel_dir);
+    println!("cargo:rustc-link-search=native={}", library_dir.display());
+
+    // --- Adição para libcudart.so ---
+    // Informa ao Cargo para linkar a biblioteca 'cudart' (para libcudart.so)
+    println!("cargo:rustc-link-lib=cudart");
+
+    // Informa ao Cargo onde encontrar a libcudart.so
+    // Use 'native=' para indicar que é um caminho do sistema
+    println!("cargo:rustc-link-search=native=/usr/local/cuda/lib64");
+    // --------------------------------
+
+    // Opcional: Informar ao Cargo para recompilar se os arquivos C ou o Makefile mudarem
+    println!("cargo:rerun-if-changed={}/dot_product.cu", kernel_dir);
+    println!("cargo:rerun-if-changed={}/dot_product.h", kernel_dir);
+    println!("cargo:rerun-if-changed={}/Makefile", kernel_dir);
+}
