@@ -18,6 +18,8 @@ mod cg {
     use rayon::ThreadPoolBuilder;
     use std::env;
 
+    use platform_aware_nvidia::CUDA;
+
     #[cfg(class = "S")]
     mod params {
         pub const CLASS: char = 'S';
@@ -948,6 +950,18 @@ mod cg {
         
     }
 
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn matvecmul(
+        colidx: &[i32],
+        rowstr: &[i32], 
+        a: &[f64],
+        x: &[f64],
+        y: &mut[f64],
+    ) {
+
+
+    }
+
     // x * y (single thread)
     #[kernelversion]
     fn vecvecmul(x: &[f64], y: &[f64]) -> f64 {
@@ -968,6 +982,12 @@ mod cg {
             .into_par_iter()
             .map(|(x, y)| *x * *y)
             .sum()
+    }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn vecvecmul(x: &[f64], y: &[f64]) -> f64 {
+
+        return 0.0f64;
     }
 
     // y = y + alpha * x  (single thread)
@@ -992,6 +1012,12 @@ mod cg {
                     });
     }
 
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn scalarvecmul2(alpha:f64, x: &[f64], y: &mut [f64]) {
+
+    }
+            
+            
     // y = x + alpha * y  (single thread)
     #[kernelversion]
     fn scalarvecmul1(alpha:f64, x: &[f64], y: &mut [f64]) {
@@ -1013,6 +1039,10 @@ mod cg {
                 });
     }
 
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn scalarvecmul1(alpha:f64, x: &[f64], y: &mut [f64]) {
+
+    }
 
     #[kernelversion]
     fn norm(x: &[f64], y: &[f64]) -> f64 {
@@ -1028,20 +1058,10 @@ mod cg {
         f64::sqrt(sum)
     }
 
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn norm(x: &[f64], y: &[f64]) -> f64 {
-        let sum = (
-            &x[0..(LASTCOL - FIRSTCOL + 1) as usize],
-            &y[0..(LASTCOL - FIRSTCOL + 1) as usize],
-        )
-            .into_par_iter()
-            .map(|(x, y)| {
-                let d = *x - *y;
-                d * d
-            })
-            .sum();
 
-        f64::sqrt(sum)   
+        return 0.0f64;
     }
 
 }
