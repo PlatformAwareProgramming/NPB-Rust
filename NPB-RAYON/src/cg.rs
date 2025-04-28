@@ -4,7 +4,6 @@ fn main() {
     cg::main();
 }
 
-
 use platform_aware::{platformaware};
 
 #[platformaware(matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
@@ -19,6 +18,13 @@ mod cg {
     use std::env;
 
     use platform_aware_nvidia::CUDA;
+
+    // Invocação da função CUDA
+    use std::ffi::c_double;
+    use std::os::raw::c_int;
+    unsafe extern "C" {
+        fn dot_product_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
+    }
 
     #[cfg(class = "S")]
     mod params {
@@ -986,8 +992,14 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn vecvecmul(x: &[f64], y: &[f64]) -> f64 {
-
-        return 0.0f64;
+        assert_eq!(x.len(), y.len());
+        let mut result: f64 = 0.0;
+    
+        unsafe {
+            dot_product_gpu(x.as_ptr(), y.as_ptr(), &mut result as *mut f64, x.len() as i32);
+        }
+    
+        result    
     }
 
     // y = y + alpha * x  (single thread)
