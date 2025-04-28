@@ -992,6 +992,8 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn vecvecmul(x: &[f64], y: &[f64]) -> f64 {
+        println!("GPU touched!");
+
         assert_eq!(x.len(), y.len());
         let mut result: f64 = 0.0;
     
