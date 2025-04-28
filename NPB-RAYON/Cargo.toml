@@ -1,5 +1,5 @@
 [package]
-    name = "npb-rust-ser"
+    name = "npb-rust-ray"
     version = "0.1.0"
     edition = "2024"
 

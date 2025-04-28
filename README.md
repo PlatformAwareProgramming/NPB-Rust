@@ -12,7 +12,7 @@ NAS Parallel Benchmarks in Rust
 		Dalvan Griebler (PUCRS)
 	
 	Code contributors: 
-		Eduardo Martins (PUCRS)
+		Eduardo M. Martins (PUCRS)
 	
 	In case of questions or problems, please send an e-mail to us:	
 		dalvan.griebler@pucrs.br
