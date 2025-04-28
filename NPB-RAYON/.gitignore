@@ -31,3 +31,7 @@ Cargo.lock
 # Ignore all local history of files
 .history
 .ionide
+
+# C Objects and Libraries
+*.o
+*.so
