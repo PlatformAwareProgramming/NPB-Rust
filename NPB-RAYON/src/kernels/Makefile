@@ -8,12 +8,12 @@ NVCC = nvcc
 CC = gcc
 
 # Flags de compilação
-CUDA_FLAGS = --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets
+CUDA_FLAGS = -arch=sm_86 --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets
 CC_FLAGS = -shared -lcudart
 
 # Criação da biblioteca compartilhada a partir do objeto compilado
 $(CUDA_LIB): $(CUDA_OBJ)
-	$(CC) $(CC_FLAGS) $(CUDA_OBJ) -o $(CUDA_LIB)
+	$(CC)  $(CUDA_OBJ) -o $(CUDA_LIB) $(CC_FLAGS)
 
 # Compilação CUDA: cria o arquivo de objeto
 $(CUDA_OBJ): $(CUDA_SRC)
