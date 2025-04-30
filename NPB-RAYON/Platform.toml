@@ -1,0 +1,34 @@
+[accelerator]
+acc_manufacturer = "NVIDIA"
+acc_memory_type = "DDR3"
+acc_count = 1
+acc_backend = ["CUDA44","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_11_0"]
+acc_architecture = "Maxwell"
+acc_model = "NVIDIAGeForce_940MX"
+acc_cpu_count = 1
+acc_processor = "GM108M"
+acc_memory_size = 4
+acc_tdp = 23
+acc_type = "GPU"
+
+[processor]
+cpu_core_count = 1
+cpu_count = 1
+cpu_core_threads_count = 2
+cpu_simd = ["AVX2"]
+cpu_L2_size = 262144
+cpu_L3_size = 4194304
+cpu_L1_size = 32768
+cpu_core_clock = 2900
+cpu_manufacturer = "Intel"
+cpu_isa = "ISA_x86_64_v3"
+cpu_tdp = 15
+cpu_model = "IntelCore_i7_7500U"
+cpu_microarchitecture = "KabyLake"
+
+[memory]
+mem_frequency = 2400
+mem_size = 17179
+# mem_latency = 0
+mem_type = "DDR4"
+mem_bandwidth = 2133

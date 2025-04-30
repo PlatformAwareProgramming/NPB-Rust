@@ -490,7 +490,7 @@ mod cg {
         * --------------------------------------------------------------------
         */
         rho = vecvecmul(r, r);
-
+        
         /* the conj grad iteration loop */
         for _ in 1..cgitmax {
             /*
@@ -513,7 +513,9 @@ mod cg {
             * obtain p.q
             * --------------------------------------------------------------------
             */
-            d = vecvecmul(p, q); 
+
+
+            d = vecvecmul(p, q);
 
             /*
             * --------------------------------------------------------------------
@@ -539,7 +541,7 @@ mod cg {
             scalarvecmul2(alpha, p, z);
             scalarvecmul2(-alpha, q, r);
 
-            rho = vecvecmul(r,r);
+            rho = vecvecmul(r, r);
 
             /*
             * ---------------------------------------------------------------------
@@ -964,8 +966,19 @@ mod cg {
         x: &[f64],
         y: &mut[f64],
     ) {
-
-
+        (
+            &rowstr[0..NA as usize],
+            &rowstr[1..NA as usize + 1],
+            &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
+        )
+            .into_par_iter()
+            .for_each(|(j, j1, y)| {
+                *y = (&a[*j as usize..*j1 as usize])
+                    .into_iter()
+                    .zip(&colidx[*j as usize..*j1 as usize])
+                    .map(|(a, colidx)| a * x[*colidx as usize])
+                    .sum();
+            });
     }
 
     // x * y (single thread)
@@ -992,13 +1005,11 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn vecvecmul(x: &[f64], y: &[f64]) -> f64 {
-        println!("GPU touched!");
 
-        assert_eq!(x.len(), y.len());
         let mut result: f64 = 0.0;
     
         unsafe {
-            dot_product_gpu(x.as_ptr(), y.as_ptr(), &mut result as *mut f64, x.len() as i32);
+            dot_product_gpu(x.as_ptr(), y.as_ptr(), &mut result as *mut f64, (LASTCOL - FIRSTCOL + 1) as i32);
         }
     
         result    
@@ -1028,6 +1039,14 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn scalarvecmul2(alpha:f64, x: &[f64], y: &mut [f64]) {
+            (
+                &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
+                &x[0..(LASTCOL - FIRSTCOL + 1) as usize],
+            )
+                .into_par_iter()
+                .for_each(|(y, x)| {
+                    *y += alpha * *x;
+                    });
 
     }
             
@@ -1055,6 +1074,14 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn scalarvecmul1(alpha:f64, x: &[f64], y: &mut [f64]) {
+        (
+            &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
+            &x[0..(LASTCOL - FIRSTCOL + 1) as usize],
+        )
+            .into_par_iter()
+            .for_each(|(y, x)| {
+                *y = *x + alpha * *y;
+                });
 
     }
 
@@ -1074,8 +1101,17 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn norm(x: &[f64], y: &[f64]) -> f64 {
+        let sum = (&x[0..(LASTCOL - FIRSTCOL + 1) as usize])
+            .into_iter()
+            .zip(&y[0..(LASTCOL - FIRSTCOL + 1) as usize])
+            .map(|(x, y)| {
+                let d = *x - *y;
+                d * d
+        })
+        .sum();
 
-        return 0.0f64;
+        f64::sqrt(sum)
+
     }
 
 }
