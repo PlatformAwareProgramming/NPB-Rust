@@ -24,6 +24,8 @@ mod cg {
     use std::os::raw::c_int;
     unsafe extern "C" {
         fn dot_product_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
+        fn alloc_vectors_gpu();
+        fn free_vectors_gpu();
     }
 
     #[cfg(class = "S")]
@@ -189,6 +191,8 @@ mod cg {
         let mut p: Vec<f64> = vec![0.0; NA as usize + 2];
         let mut q: Vec<f64> = vec![0.0; NA as usize + 2];
         let mut r: Vec<f64> = vec![0.0; NA as usize + 2];
+
+        allocvectors(NA + 2);
 
         let naa: i32 = NA;
         let nzz: usize = NZ;
@@ -451,6 +455,9 @@ mod cg {
                 }
             }
         }
+
+        freevectors();
+
     }
 
     /*
@@ -980,6 +987,24 @@ mod cg {
                     .sum();
             });
     }
+
+    #[kernelversion]
+    fn allocvectors() {}
+
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn allocvectors() {}
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn allocvectors() { unsafe { alloc_vectors_gpu() } }
+
+    #[kernelversion]
+    fn freevectors() {}
+
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn freevectors() {}
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn freevectors() { unsafe { free_vectors_gpu() } }
 
     // x * y (single thread)
     #[kernelversion]

@@ -64,10 +64,39 @@ int next_power_of_two(int n) {
     return n;
 }
 
+double *d_x;
+double *d_y;
+double *d_partial_sum;
+double* h_partial_sum;
+
+
+void allocvectors(int n) {
+
+    int threads = 256;
+    int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
+    int allthreads = threads*blocks;
+
+    CUDA_CHECK(cudaMalloc((void**)&d_x, n * sizeof(double)));
+    CUDA_CHECK(cudaMalloc((void**)&d_y, n * sizeof(double)));
+    CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, blocks * sizeof(double)));
+
+    h_partial_sum = (double*) malloc(blocks * sizeof(double));
+
+}
+
+void freevectors() {
+
+    CUDA_CHECK(cudaFree(d_x));
+    CUDA_CHECK(cudaFree(d_y));
+    CUDA_CHECK(cudaFree(d_partial_sum));
+    free(h_partial_sum);
+}
+
+int alloc = 0;
 
 // Função wrapper para ser chamada do Rust
 void dot_product_gpu(const double* x, const double* y, double* result, int n) {
-    double *d_x, *d_y, *d_partial_sum;
+    //double *d_x, *d_y, *d_partial_sum;
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
     int allthreads = threads*blocks;
@@ -77,10 +106,10 @@ void dot_product_gpu(const double* x, const double* y, double* result, int n) {
         exit(EXIT_FAILURE);
     }
 
-    CUDA_CHECK(cudaMalloc((void**)&d_x, n * sizeof(double)));
-    CUDA_CHECK(cudaMalloc((void**)&d_y, n * sizeof(double)));
-    CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, blocks * sizeof(double)));
-
+ //      CUDA_CHECK(cudaMalloc((void**)&d_x, n * sizeof(double)));
+ //      CUDA_CHECK(cudaMalloc((void**)&d_y, n * sizeof(double)));
+ //      CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, blocks * sizeof(double)));
+ 
     CUDA_CHECK(cudaMemcpy(d_x, x, n * sizeof(double), cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemcpy(d_y, y, n * sizeof(double), cudaMemcpyHostToDevice));
 
@@ -90,7 +119,7 @@ void dot_product_gpu(const double* x, const double* y, double* result, int n) {
     CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
 //    CUDA_CHECK(cudaDeviceSynchronize()); // Garante que o kernel terminou
 
-    double* h_partial_sum = (double*) malloc(blocks * sizeof(double));
+//    double* h_partial_sum = (double*) malloc(blocks * sizeof(double));
     CUDA_CHECK(cudaMemcpy(h_partial_sum, d_partial_sum, blocks * sizeof(double), cudaMemcpyDeviceToHost));
  
     *result = 0.0;
@@ -98,10 +127,10 @@ void dot_product_gpu(const double* x, const double* y, double* result, int n) {
         *result += h_partial_sum[i];
     }
 
-    free(h_partial_sum);
-    CUDA_CHECK(cudaFree(d_x));
-    CUDA_CHECK(cudaFree(d_y));
-    CUDA_CHECK(cudaFree(d_partial_sum));
+//    CUDA_CHECK(cudaFree(d_x));
+//    CUDA_CHECK(cudaFree(d_y));
+//    CUDA_CHECK(cudaFree(d_partial_sum));
+//    free(h_partial_sum);
 }
 
 }
