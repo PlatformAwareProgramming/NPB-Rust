@@ -989,13 +989,13 @@ mod cg {
     }
 
     #[kernelversion]
-    fn allocvectors() {}
+    fn allocvectors(n:i32) {}
 
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn allocvectors() {}
+    fn allocvectors(n:i32) {}
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn allocvectors() { unsafe { alloc_vectors_gpu() } }
+    fn allocvectors(n:i32) { unsafe { alloc_vectors_gpu() } }
 
     #[kernelversion]
     fn freevectors() {}
