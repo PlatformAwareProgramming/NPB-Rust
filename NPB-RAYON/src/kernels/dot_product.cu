@@ -68,7 +68,7 @@ double *d_y;
 double *d_partial_sum;
 double* h_partial_sum;
 
-voud alloc_a_gpu(double** x, int m) {
+void alloc_a_gpu(double** x, int m) {
     CUDA_CHECK(cudaMalloc((void**)x, m * sizeof(double)));
     d_a = *x;
 }
