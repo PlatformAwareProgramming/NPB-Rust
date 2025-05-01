@@ -15,38 +15,57 @@
 extern "C" {
 
 // Kernel CUDA para multiplicar os vetores
-__global__ void dot_product_kernel(const double* x, const double* y, double* partial_sum, int n, int allthreads) {
-    __shared__ double cache[256]; // Cache compartilhado para redução
-    int tid = threadIdx.x + blockIdx.x * blockDim.x;
- 
-   if (tid < allthreads) {
+__global__ void dot_product_kernel(const double* x, const double* y, double* partial_sum, int n, int NA) {
+    __shared__ double share_data[256]; // Cache compartilhado para redução
+    int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
+    int local_id = threadIdx.x;
 
-    int cacheIndex = threadIdx.x;
+	share_data[local_id] = 0.0;
+
+	if(thread_id >= NA){return;}
+
+	share_data[threadIdx.x] = p[thread_id] * q[thread_id];
+
+	__syncthreads();
+	for(int i=blockDim.x/2; i>0; i>>=1){
+		if(local_id<i){share_data[local_id]+=share_data[local_id+i];}
+		__syncthreads();
+	}
+
+	if(local_id==0) { 
+        partial_sum[blockIdx.x] = share_data[0]; 
+    }
+
+ /*   
+   if (thread_id < NA) {
+
+    int local_id = threadIdx.x;
     __syncthreads();
 
     double temp = 0.0;
-    while (tid < n) {
-        temp += x[tid] * y[tid];
-        tid += blockDim.x * gridDim.x;
+    while (thread_id < n) {
+        temp += x[thread_id] * y[thread_id];
+        thread_id += blockDim.x * gridDim.x;
     }
 
-    cache[cacheIndex] = temp;
+    share_data[local_id] = temp;
 
     __syncthreads();
 
     // Redução paralela
     int i = blockDim.x/2;
     while (i != 0) {
-        if (cacheIndex < i) {
-            cache[cacheIndex] += cache[cacheIndex + i];
+        if (local_id < i) {
+            share_data[local_id] += share_data[local_id + i];
         }
         __syncthreads();
         i /= 2;
-    }
+    }   
 
-    if (cacheIndex == 0)
-        partial_sum[blockIdx.x] = cache[0];
+    if (local_id == 0)
+        partial_sum[blockIdx.x] = share_data[0];
     }
+        */
 }
 
 
