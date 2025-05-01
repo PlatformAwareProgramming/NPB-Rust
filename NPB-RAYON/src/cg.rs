@@ -24,7 +24,8 @@ mod cg {
     use std::os::raw::c_int;
     unsafe extern "C" {
         fn dot_product_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
-        fn launch_csr_matvec_mul(h_colidx: *const i32, h_rowstr: *const i32, h_a: *const f64, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);        fn alloc_vectors_gpu(n: i32);
+        fn launch_csr_matvec_mul(h_colidx: *const i32, h_rowstr: *const i32, h_a: *const f64, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);        
+        fn alloc_vectors_gpu(m:i32, n: i32);
         fn free_vectors_gpu();
     }
 
@@ -1019,7 +1020,7 @@ mod cg {
     fn allocvectors(m: i32, n:i32) {}
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn allocvectors(m: i32, n:i32) { unsafe { alloc_vectors_gpu(n) } }
+    fn allocvectors(m: i32, n:i32) { unsafe { alloc_vectors_gpu(m, n) } }
 
     #[kernelversion]
     fn freevectors() {}
