@@ -69,11 +69,13 @@ double *d_partial_sum;
 double* h_partial_sum;
 
 
+int *d_colidx;
 void alloc_colidx_gpu(double** x, int m) {
     CUDA_CHECK(cudaMalloc((void**)x, m * sizeof(double)));
     d_colidx = *x;
 }
 
+int *d_rowstr;
 void alloc_rowstr_gpu(double** x, int m) {
     CUDA_CHECK(cudaMalloc((void**)x, m * sizeof(double)));
     d_rowstr = *x;
@@ -135,8 +137,8 @@ void alloc_vectors_gpu(int m, int n) {
 
 void free_vectors_gpu() {
 
-    CUDA_CHECK(cudaFree(d_colidx));
-    CUDA_CHECK(cudaFree(d_rowstr));
+    CUDA_CHECK(cudaFree(d_colidx_));
+    CUDA_CHECK(cudaFree(d_rowstr_));
     CUDA_CHECK(cudaFree(d_aa));
     CUDA_CHECK(cudaFree(d_xx));
     CUDA_CHECK(cudaFree(d_yy));
