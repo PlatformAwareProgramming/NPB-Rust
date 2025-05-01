@@ -194,7 +194,7 @@ mod cg {
         let mut q: Vec<f64> = vec![0.0; NA as usize + 2];
         let mut r: Vec<f64> = vec![0.0; NA as usize + 2];
 
-        allocvectors(NZ, (NA as usize + 2) as i32);
+        allocvectors(NZ as i32, (NA as usize + 2) as i32);
 
         let naa: i32 = NA;
         let nzz: usize = NZ;
