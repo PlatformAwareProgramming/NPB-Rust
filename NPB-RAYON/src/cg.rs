@@ -35,6 +35,7 @@ mod cg {
             x_len: i32,
         );
         fn alloc_vectors_gpu(m:i32, n: i32);
+        fn alloc_a_gpu(out_ptr: *mut *const c_double, m:i32);
         fn free_vectors_gpu();
     }
 
@@ -182,6 +183,18 @@ mod cg {
     fn alloc_arow() -> Vec<i32> { vec![0; NA as usize] }
     fn alloc_acol() -> Vec<i32> { vec![0; NAZ as usize] }
     fn alloc_aelt() -> Vec<f64> { vec![0.0; NAZ as usize] }
+    #[kernelversion]
+    fn alloc_a() -> Vec<f64> { vec![0.0; NZ] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_a() -> Vec<f64> { 
+        unsafe { 
+            let mut ptr: *const f64 = std::ptr::null();
+            alloc_a_gpu(&mut ptr, NZ);
+            let slice: &[f64] = std::slice::from_raw_parts(ptr, len as usize);
+        }
+        vec![0.0; NZ] 
+    }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_a() -> Vec<f64> { vec![0.0; NZ] }
     fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
     fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
@@ -1187,6 +1200,21 @@ mod cg {
         f64::sqrt(sum)
     }
 
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn norm(x: &[f64], y: &[f64]) -> f64 {
+        let sum = (&x[0..(LASTCOL - FIRSTCOL + 1) as usize])
+            .into_iter()
+            .zip(&y[0..(LASTCOL - FIRSTCOL + 1) as usize])
+            .map(|(x, y)| {
+                let d = *x - *y;
+                d * d
+        })
+        .sum();
+
+        f64::sqrt(sum)
+
+    }
+
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn norm(x: &[f64], y: &[f64]) -> f64 {
         let sum = (&x[0..(LASTCOL - FIRSTCOL + 1) as usize])
@@ -1201,5 +1229,6 @@ mod cg {
         f64::sqrt(sum)
 
     }
+
 
 }
