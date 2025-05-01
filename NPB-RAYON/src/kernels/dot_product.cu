@@ -17,14 +17,14 @@ extern "C" {
 // Kernel CUDA para multiplicar os vetores
     __global__ void dot_product_kernel(const double* x, const double* y, double* partial_sum, int n, int NA) {
         __shared__ double share_data[256]; // Cache compartilhado para redução
-        int i = threadIdx.x + blockIdx.x * blockDim.x;
+        int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
         int local_id = threadIdx.x;
 
         share_data[local_id] = 0.0;
 
-        if(i >= NA) { return; }
+        if(thread_id >= NA) { return; }
 
-        share_data[threadIdx.x] = x[i] * y[i];
+        share_data[threadIdx.x] = x[thread_id] * y[thread_id];
 
         __syncthreads();
         for(int i=blockDim.x/2; i>0; i>>=1){
@@ -80,16 +80,16 @@ extern "C" {
     __global__ void norm_gpu(const double* x, const double* y, double* partial_sum, int n, int NA) {
 
         __shared__ double share_data[256]; // Cache compartilhado para redução
-        int i = threadIdx.x + blockIdx.x * blockDim.x;
+        int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
         int local_id = threadIdx.x;
 
         share_data[local_id] = 0.0;
 
-        if(i >= NA) { return; }
+        if(thread_id >= NA) { return; }
 
         { 
             double d;
-            d = x[i] - y[i]; 
+            d = x[thread_id] - y[thread_id]; 
             share_data[threadIdx.x] = d * d;
         }
 

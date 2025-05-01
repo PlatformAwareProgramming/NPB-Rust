@@ -1263,19 +1263,29 @@ mod cg {
         .sum();
 
         f64::sqrt(sum)
-
     }
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn norm(x: &[f64], y: &[f64]) -> f64 {
 
-        let mut result: f64 = 0.0;
+        let sum = (&x[0..(LASTCOL - FIRSTCOL + 1) as usize])
+            .into_iter()
+            .zip(&y[0..(LASTCOL - FIRSTCOL + 1) as usize])
+            .map(|(x, y)| {
+                let d = *x - *y;
+                d * d
+        })
+        .sum();
+
+        f64::sqrt(sum)
+
+      /*  let mut result: f64 = 0.0;
     
         unsafe {
             launch_norm_gpu(x.as_ptr(), y.as_ptr(), &mut result as *mut f64, (LASTCOL - FIRSTCOL + 1) as i32);
         }
     
-        result    
+        result*/    
     }
 
 
