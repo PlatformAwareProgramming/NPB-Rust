@@ -6,7 +6,6 @@
 #define CUDA_CHECK(call) \
     do { \
         cudaError_t err = call; \
-        printf("ERROR: %d", err); \
         if (err != cudaSuccess) { \
             fprintf(stderr, "CUDA error in %s at line %d: %s\n", __FILE__, __LINE__, cudaGetErrorString(err)); \
             exit(EXIT_FAILURE); \
@@ -157,10 +156,10 @@ void launch_csr_matvec_mul(
     cudaMalloc(&d_y, num_rows * sizeof(double));
 */
     // 2. Copiar dados do host para o device
-    cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_colidx, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_rowstr, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_x, h_x, x_len * sizeof(double), cudaMemcpyHostToDevice);
+    CUDA_CHECK(cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_colidx, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_rowstr, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_x, h_x, x_len * sizeof(double), cudaMemcpyHostToDevice));
 
     // 3. Configurar execução do kernel
     int blockSize = 256;
@@ -172,10 +171,11 @@ void launch_csr_matvec_mul(
     );
 
     // Sincronizar GPU (garante conclusão)
-    cudaDeviceSynchronize();
+    CUDA_CHECK(cudaDeviceSynchronize());
+    CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
 
     // 5. Copiar resultado de volta para o host
-    cudaMemcpy(h_y, d_y, num_rows * sizeof(double), cudaMemcpyDeviceToHost);
+    CUDA_CHECK(cudaMemcpy(h_y, d_y, num_rows * sizeof(double), cudaMemcpyDeviceToHost));
 
     // 6. Liberar memória no device
 /*    cudaFree(d_a);
