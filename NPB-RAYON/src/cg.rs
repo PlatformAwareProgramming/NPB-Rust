@@ -205,14 +205,14 @@ mod cg {
         }
 
         let mut colidx: Vec<i32> = alloc_colidx();
-        let mut rowstr: Vec<i32> = alloc_colstr();
+        let mut rowstr: Vec<i32> = alloc_rowstr();
         let mut iv: Vec<i32> = alloc_iv();
         let mut arow: Vec<i32> = alloc_arow();
         let mut acol: Vec<i32> = alloc_acol();
         let mut aelt: Vec<f64> = alloc_aelt();
         let mut a: Vec<f64> = alloc_a();
         let mut x: Vec<f64> = alloc_x();
-        let mut z: Vec<f64> = allc_z();
+        let mut z: Vec<f64> = alloc_z();
         let mut p: Vec<f64> = alloc_p();
         let mut q: Vec<f64> = alloc_q();
         let mut r: Vec<f64> = alloc_r();
