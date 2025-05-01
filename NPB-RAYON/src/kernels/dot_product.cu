@@ -59,6 +59,23 @@ extern "C" {
         }
     }
 
+    __global__ void scalarvecmul1_gpu(double alpha, const double* x, const double* y, int n) {
+        
+        int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+        if(thread_id < n) { 
+            y[i] = x[i] + alpha*y[i];
+        }
+    }
+
+    __global__ void scalarvecmul2_gpu(double alpha, const double* x, const double* y, int n) {
+        
+        int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+        if(thread_id < n) { 
+            y[i] += alpha*x[i];
+        }
+    }
 
 int *d_colidx_;
 int *d_rowstr_;
@@ -214,6 +231,58 @@ void launch_csr_matvec_mul(
     CUDA_CHECK(cudaMemcpy(h_y, d_yy, num_rows * sizeof(double), cudaMemcpyDeviceToHost));
 
     // Liberar memória na GPU
+ }
+
+ void launch_scalarvecmul1_gpu(
+    const double alpha, 
+    const double* x, 
+    const double* y, 
+    int n) {
+
+        int blockSize = 256;
+        int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+    
+        if (blockSize & (blockSize - 1)) {
+            fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
+            exit(EXIT_FAILURE);
+        }
+     
+        CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
+    
+        scalarvecmul1_gpu<<<gridSize, blockSize>>>(alpha, d_xx, d_yy, n);
+      
+        CUDA_CHECK(cudaDeviceSynchronize());
+        CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
+    
+        CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));
+     
+ }
+
+ void launch_scalarvecmul2_gpu(
+    const double alpha, 
+    const double* x, 
+    const double* y, 
+    int size) {
+
+        int blockSize = 256;
+        int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+    
+        if (blockSize & (blockSize - 1)) {
+            fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
+            exit(EXIT_FAILURE);
+        }
+     
+        CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
+    
+        scalarvecmul2_gpu<<<gridSize, blockSize>>>(alpha, d_xx, d_yy, n);
+      
+        CUDA_CHECK(cudaDeviceSynchronize());
+        CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
+    
+        CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));        
+
  }
 
 }

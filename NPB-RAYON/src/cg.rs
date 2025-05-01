@@ -25,6 +25,8 @@ mod cg {
     unsafe extern "C" {
         fn dot_product_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
         fn launch_csr_matvec_mul(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
+        fn launch_scalarvecmul1_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
+        fn launch_scalarvecmul2_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
         fn alloc_vectors_gpu(m:i32, n: i32);
         fn alloc_colidx_gpu(out_ptr: *mut *const c_int, m:i32);
         fn alloc_rowstr_gpu(out_ptr: *mut *const c_int, m:i32);
@@ -1108,22 +1110,6 @@ mod cg {
         let nnz = a.len() as i32;
         let num_rows = y.len() as i32;
         let x_len = x.len() as i32;
-    
-/*        (
-            &rowstr[0..NA as usize],
-            &rowstr[1..NA as usize + 1],
-            &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
-        )
-            .into_par_iter()
-            .for_each(|(j, j1, y)| {
-                *y = (&a[*j as usize..*j1 as usize])
-                    .into_iter()
-                    .zip(&colidx[*j as usize..*j1 as usize])
-                    .map(|(a, colidx)| a * x[*colidx as usize])
-                    .sum();
-            });
-*/
-
 
         unsafe {
             launch_csr_matvec_mul(
@@ -1215,15 +1201,9 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn scalarvecmul2(alpha:f64, x: &[f64], y: &mut [f64]) {
-            (
-                &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
-                &x[0..(LASTCOL - FIRSTCOL + 1) as usize],
-            )
-                .into_par_iter()
-                .for_each(|(y, x)| {
-                    *y += alpha * *x;
-                    });
-
+        unsafe {
+            launch_scalarvecmul2_gpu(alpha, x.as_ptr(), y.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32);
+        }
     }
             
             
@@ -1250,14 +1230,9 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn scalarvecmul1(alpha:f64, x: &[f64], y: &mut [f64]) {
-        (
-            &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
-            &x[0..(LASTCOL - FIRSTCOL + 1) as usize],
-        )
-            .into_par_iter()
-            .for_each(|(y, x)| {
-                *y = *x + alpha * *y;
-                });
+        unsafe {
+            launch_scalarvecmul1_gpu(alpha, x.as_ptr(), y.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32);
+        }
 
     }
 
