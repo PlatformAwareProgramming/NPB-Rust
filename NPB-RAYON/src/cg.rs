@@ -985,7 +985,7 @@ mod cg {
     fn alloc_rowstr() -> Vec<i32>  { 
         let mut ptr: *const f32 = std::ptr::null();
         unsafe { alloc_rowstr_gpu(&mut ptr, NA + 1) };
-        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 1 as usize).to_vec() };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 1) as usize).to_vec() };
         vec![0; (NA + 1) as usize] 
     }
 
@@ -997,7 +997,7 @@ mod cg {
     fn alloc_x() -> Vec<f64> { 
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_x_gpu(&mut ptr, NA + 2) };
-        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2).to_vec() };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
         vec![1.0; NA as usize + 2] 
     }
 
@@ -1009,7 +1009,7 @@ mod cg {
     fn alloc_z() -> Vec<f64> { 
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_z_gpu(&mut ptr, NA + 2) };
-        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2 as usize).to_vec() };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
         vec![0.0; NA as usize + 2] 
     }
 
@@ -1021,7 +1021,7 @@ mod cg {
     fn alloc_p() -> Vec<f64> { 
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_p_gpu(&mut ptr, NA + 2) };
-        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2 as usize).to_vec() };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
         vec![0.0; NA as usize + 2] 
     }
 
@@ -1033,7 +1033,7 @@ mod cg {
     fn alloc_q() -> Vec<f64> { 
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_q_gpu(&mut ptr, NA + 2) };
-        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2 as usize).to_vec() };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
         vec![0.0; NA as usize + 2] 
     }
 
@@ -1045,7 +1045,7 @@ mod cg {
     fn alloc_r() -> Vec<f64> { 
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_r_gpu(&mut ptr, NA + 2) };
-        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2 as usize).to_vec() };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
         vec![0.0; NA as usize + 2] 
     }
 
