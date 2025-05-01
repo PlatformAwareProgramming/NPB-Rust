@@ -59,18 +59,13 @@ extern "C" {
         }
     }
 
-
-double *d_a;
-int* d_colidx,
-int* d_rowstr;
-
 double *d_x;
 double *d_y;
 double *d_partial_sum;
 double* h_partial_sum;
 
 
-void alloc_vectors_gpu(int n) {
+void alloc_vectors_gpu(int m, int n) {
 
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
@@ -79,6 +74,12 @@ void alloc_vectors_gpu(int n) {
     CUDA_CHECK(cudaMalloc((void**)&d_x, n * sizeof(double)));
     CUDA_CHECK(cudaMalloc((void**)&d_y, n * sizeof(double)));
     CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, blocks * sizeof(double)));
+
+    CUDA_CHECK(cudaMalloc(&d_a, m * sizeof(double)));
+    CUDA_CHECK(cudaMalloc(&d_colidx, m * sizeof(int)));
+    CUDA_CHECK(cudaMalloc(&d_rowstr, n * sizeof(int)));
+//    CUDA_CHECK(cudaMalloc(&d_x, n * sizeof(double)));
+//    CUDA_CHECK(cudaMalloc(&d_y, n * sizeof(double)));
 
     h_partial_sum = (double*) malloc(blocks * sizeof(double));
 
@@ -89,6 +90,12 @@ void free_vectors_gpu() {
     CUDA_CHECK(cudaFree(d_x));
     CUDA_CHECK(cudaFree(d_y));
     CUDA_CHECK(cudaFree(d_partial_sum));
+    CUDA_CHECK(cudaFree(d_a));
+    CUDA_CHECK(cudaFree(d_colidx));
+    CUDA_CHECK(cudaFree(d_rowstr));
+    CUDA_CHECK(cudaFree(d_x));
+    CUDA_CHECK(cudaFree(d_y));
+    
     free(h_partial_sum);
 }
 
@@ -139,12 +146,12 @@ void launch_csr_matvec_mul(
     double *d_a, *d_x, *d_y;
     int *d_colidx, *d_rowstr;
 
-    cudaMalloc(&d_a, nnz * sizeof(double));
+/*    cudaMalloc(&d_a, nnz * sizeof(double));
     cudaMalloc(&d_colidx, nnz * sizeof(int));
     cudaMalloc(&d_rowstr, (num_rows + 1) * sizeof(int));
     cudaMalloc(&d_x, x_len * sizeof(double));
     cudaMalloc(&d_y, num_rows * sizeof(double));
-
+*/
     // 2. Copiar dados do host para o device
     cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_colidx, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice);
@@ -167,11 +174,11 @@ void launch_csr_matvec_mul(
     cudaMemcpy(h_y, d_y, num_rows * sizeof(double), cudaMemcpyDeviceToHost);
 
     // 6. Liberar memória no device
-    cudaFree(d_a);
+/*    cudaFree(d_a);
     cudaFree(d_colidx);
     cudaFree(d_rowstr);
     cudaFree(d_x);
-    cudaFree(d_y);
+    cudaFree(d_y);*/
 }
 
 }
