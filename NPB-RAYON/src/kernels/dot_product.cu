@@ -81,11 +81,9 @@ void alloc_vectors_gpu(int m, int n) {
     CUDA_CHECK(cudaMalloc((void**)&d_y, n * sizeof(double)));
     CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, blocks * sizeof(double)));
 
-    CUDA_CHECK(cudaMalloc(&d_a, m * sizeof(double)));
-    CUDA_CHECK(cudaMalloc(&d_colidx, m * sizeof(int)));
-    CUDA_CHECK(cudaMalloc(&d_rowstr, (n+1) * sizeof(int)));
-//    CUDA_CHECK(cudaMalloc(&d_x, n * sizeof(double)));
-//    CUDA_CHECK(cudaMalloc(&d_y, n * sizeof(double)));
+//    CUDA_CHECK(cudaMalloc(&d_a, m * sizeof(double)));
+//    CUDA_CHECK(cudaMalloc(&d_colidx, m * sizeof(int)));
+//    CUDA_CHECK(cudaMalloc(&d_rowstr, (n+1) * sizeof(int)));
 
     h_partial_sum = (double*) malloc(blocks * sizeof(double));
 
@@ -93,9 +91,9 @@ void alloc_vectors_gpu(int m, int n) {
 
 void free_vectors_gpu() {
 
-    CUDA_CHECK(cudaFree(d_colidx));
-    CUDA_CHECK(cudaFree(d_rowstr));
-    CUDA_CHECK(cudaFree(d_a));
+//    CUDA_CHECK(cudaFree(d_colidx));
+//    CUDA_CHECK(cudaFree(d_rowstr));
+//    CUDA_CHECK(cudaFree(d_a));
     CUDA_CHECK(cudaFree(d_x));
     CUDA_CHECK(cudaFree(d_y));
     CUDA_CHECK(cudaFree(d_partial_sum));
@@ -149,15 +147,15 @@ void launch_csr_matvec_mul(
     int x_len
 ) {
     // 1. Alocar memória no device
-//    double *d_a, *d_x, *d_y;
-//    int *d_colidx, *d_rowstr;
+    double *d_a, *d_x, *d_y;
+    int *d_colidx, *d_rowstr;
 
-/*    cudaMalloc(&d_a, nnz * sizeof(double));
+    cudaMalloc(&d_a, nnz * sizeof(double));
     cudaMalloc(&d_colidx, nnz * sizeof(int));
     cudaMalloc(&d_rowstr, (num_rows + 1) * sizeof(int));
     cudaMalloc(&d_x, x_len * sizeof(double));
     cudaMalloc(&d_y, num_rows * sizeof(double));
-*/
+
     printf("LAUNCH_CSR_MATVEC_MUL(nnz=%d, num_rows=%d, x_len=%d)\n", nnz, num_rows, x_len);
 
     // 2. Copiar dados do host para o device
@@ -183,11 +181,11 @@ void launch_csr_matvec_mul(
     CUDA_CHECK(cudaMemcpy(h_y, d_y, num_rows * sizeof(double), cudaMemcpyDeviceToHost));
 
     // 6. Liberar memória no device
-/*    cudaFree(d_a);
+    cudaFree(d_a);
     cudaFree(d_colidx);
     cudaFree(d_rowstr);
     cudaFree(d_x);
-    cudaFree(d_y);*/
+    cudaFree(d_y);
 }
 
 }

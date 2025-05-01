@@ -1007,8 +1007,8 @@ mod cg {
                 x.as_ptr(),
                 y.as_mut_ptr(),
                 nnz,
-                /*num_rows */ (LASTCOL - FIRSTCOL + 1) as i32,
-                /*x_len*/ (LASTCOL - FIRSTCOL + 1) as i32,
+                num_rows /*  (LASTCOL - FIRSTCOL + 1) as i32 */,
+                x_len /* (LASTCOL - FIRSTCOL + 1) as i32 */,
             );
         }
         }
