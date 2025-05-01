@@ -176,6 +176,19 @@ mod cg {
     pub const EPSILON: f64 = 1.0e-10;
     pub const AMULT: f64 = 1220703125.0;
 
+    fn alloc_colidx() -> Vec<i32> { vec![0; NZ] }
+    fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    fn alloc_iv() -> Vec<i32> { vec![0; NA as usize] }
+    fn alloc_arow() -> Vec<i32> { vec![0; NA as usize] }
+    fn alloc_acol() -> Vec<i32> { vec![0; NAZ as usize] }
+    fn alloc_aelt() -> Vec<f64> { vec![0.0; NAZ as usize] }
+    fn alloc_a() -> Vec<f64> { vec![0.0; NZ] }
+    fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
+    fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+
     /* cg */
     pub fn main() {
         if let Ok(ray_num_threads_str) = env::var("RAY_NUM_THREADS") {
@@ -191,18 +204,18 @@ mod cg {
             ThreadPoolBuilder::new().build_global().unwrap();
         }
 
-        let mut colidx: Vec<i32> = vec![0; NZ];
-        let mut rowstr: Vec<i32> = vec![0; (NA + 1) as usize];
-        let mut iv: Vec<i32> = vec![0; NA as usize];
-        let mut arow: Vec<i32> = vec![0; NA as usize];
-        let mut acol: Vec<i32> = vec![0; NAZ as usize];
-        let mut aelt: Vec<f64> = vec![0.0; NAZ as usize];
-        let mut a: Vec<f64> = vec![0.0; NZ];
-        let mut x: Vec<f64> = vec![1.0; NA as usize + 2];
-        let mut z: Vec<f64> = vec![0.0; NA as usize + 2];
-        let mut p: Vec<f64> = vec![0.0; NA as usize + 2];
-        let mut q: Vec<f64> = vec![0.0; NA as usize + 2];
-        let mut r: Vec<f64> = vec![0.0; NA as usize + 2];
+        let mut colidx: Vec<i32> = alloc_colidx();
+        let mut rowstr: Vec<i32> = alloc_colstr();
+        let mut iv: Vec<i32> = alloc_iv();
+        let mut arow: Vec<i32> = alloc_arow();
+        let mut acol: Vec<i32> = alloc_acol();
+        let mut aelt: Vec<f64> = alloc_aelt();
+        let mut a: Vec<f64> = alloc_a();
+        let mut x: Vec<f64> = alloc_x();
+        let mut z: Vec<f64> = allc_z();
+        let mut p: Vec<f64> = alloc_p();
+        let mut q: Vec<f64> = alloc_q();
+        let mut r: Vec<f64> = alloc_r();
 
         allocvectors(NZ as i32, (NA as usize + 2) as i32);
 
