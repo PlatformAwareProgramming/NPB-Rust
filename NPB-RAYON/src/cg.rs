@@ -6,7 +6,7 @@ fn main() {
 
 use platform_aware::{platformaware};
 
-#[platformaware(allocvectors, alloc_a, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
+#[platformaware(allocvectors, alloc_a, alloc_colidx, alloc_rowstr, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
 mod cg {
 
     use crate::common::print_results::*;
@@ -179,7 +179,6 @@ mod cg {
     fn alloc_arow() -> Vec<i32> { vec![0; NA as usize] }
     fn alloc_acol() -> Vec<i32> { vec![0; NAZ as usize] }
     fn alloc_aelt() -> Vec<f64> { vec![0.0; NAZ as usize] }
-
 
     /* cg */
     pub fn main() {
