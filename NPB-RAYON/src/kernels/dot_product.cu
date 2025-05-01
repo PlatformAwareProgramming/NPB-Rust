@@ -71,7 +71,7 @@ double* h_partial_sum;
 
 void alloc_vectors_gpu(int m, int n) {
 
-    printf("ALLOC_VECTORS_GPU(m=%d, n=%d)", m, n);
+    printf("ALLOC_VECTORS_GPU(m=%d, n=%d)\n", m, n);
 
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
@@ -83,7 +83,7 @@ void alloc_vectors_gpu(int m, int n) {
 
     CUDA_CHECK(cudaMalloc(&d_a, m * sizeof(double)));
     CUDA_CHECK(cudaMalloc(&d_colidx, m * sizeof(int)));
-    CUDA_CHECK(cudaMalloc(&d_rowstr, n * sizeof(int)));
+    CUDA_CHECK(cudaMalloc(&d_rowstr, (n+1) * sizeof(int)));
 //    CUDA_CHECK(cudaMalloc(&d_x, n * sizeof(double)));
 //    CUDA_CHECK(cudaMalloc(&d_y, n * sizeof(double)));
 
@@ -110,6 +110,8 @@ void dot_product_gpu(const double* x,
                      const double* y, 
                      double* result, 
                      int n) {
+
+    printf("DOT_PRODUCT_GPU(%d)\n", n);
 
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
@@ -156,7 +158,7 @@ void launch_csr_matvec_mul(
     cudaMalloc(&d_x, x_len * sizeof(double));
     cudaMalloc(&d_y, num_rows * sizeof(double));
 */
-    println("LAUNCH_CSR_MATVEC_MUL(nnz=%d, num_rows=%d, x_len=%d)", nnz, num_rows, x_len);
+    printf("LAUNCH_CSR_MATVEC_MUL(nnz=%d, num_rows=%d, x_len=%d)\n", nnz, num_rows, x_len);
 
     // 2. Copiar dados do host para o device
     CUDA_CHECK(cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
