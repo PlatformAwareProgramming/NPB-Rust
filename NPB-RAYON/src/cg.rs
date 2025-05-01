@@ -1008,6 +1008,22 @@ mod cg {
         let num_rows = y.len() as i32;
         let x_len = x.len() as i32;
     
+/*        (
+            &rowstr[0..NA as usize],
+            &rowstr[1..NA as usize + 1],
+            &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
+        )
+            .into_par_iter()
+            .for_each(|(j, j1, y)| {
+                *y = (&a[*j as usize..*j1 as usize])
+                    .into_iter()
+                    .zip(&colidx[*j as usize..*j1 as usize])
+                    .map(|(a, colidx)| a * x[*colidx as usize])
+                    .sum();
+            });
+*/
+
+
         unsafe {
             launch_csr_matvec_mul(
                 a.as_ptr(),

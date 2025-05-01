@@ -71,8 +71,6 @@ double* h_partial_sum;
 
 void alloc_vectors_gpu(int m, int n) {
 
-    printf("ALLOC_VECTORS_GPU(m=%d, n=%d)\n", m, n);
-
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
     int allthreads = threads*blocks;
@@ -108,8 +106,6 @@ void dot_product_gpu(const double* x,
                      const double* y, 
                      double* result, 
                      int n) {
-
-    printf("DOT_PRODUCT_GPU(%d)\n", n);
 
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
