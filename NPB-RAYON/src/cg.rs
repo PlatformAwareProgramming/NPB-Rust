@@ -970,49 +970,84 @@ mod cg {
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn alloc_colidx() -> Vec<i32> { vec![0; NZ] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_colidx() -> Vec<i32> { vec![0; NZ] }
+    fn alloc_colidx() -> Vec<i32> { 
+        let mut ptr: *const i32 = std::ptr::null();
+        unsafe { alloc_colidx_gpu(&mut ptr, NZ as i32) };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
+        vec![0; NZ] 
+    }
 
     #[kernelversion]
     fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    fn alloc_rowstr() -> Vec<i32>  { 
+        let mut ptr: *const f32 = std::ptr::null();
+        unsafe { alloc_rowstr_gpu(&mut ptr, NA + 1) };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 1).to_vec() };
+        vec![0; (NA + 1) as usize] 
+    }
 
     #[kernelversion]
     fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
+    fn alloc_x() -> Vec<f64> { 
+        let mut ptr: *const f64 = std::ptr::null();
+        unsafe { alloc_x_gpu(&mut ptr, NA + 2) };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2).to_vec() };
+        vec![1.0; NA as usize + 2] 
+    }
 
     #[kernelversion]
     fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    fn alloc_z() -> Vec<f64> { 
+        let mut ptr: *const f64 = std::ptr::null();
+        unsafe { alloc_z_gpu(&mut ptr, NA + 2) };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2).to_vec() };
+        vec![0.0; NA as usize + 2] 
+    }
 
     #[kernelversion]
     fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    fn alloc_p() -> Vec<f64> { 
+        let mut ptr: *const f64 = std::ptr::null();
+        unsafe { alloc_p_gpu(&mut ptr, NA + 2) };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2).to_vec() };
+        vec![0.0; NA as usize + 2] 
+    }
 
     #[kernelversion]
     fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    fn alloc_q() -> Vec<f64> { 
+        let mut ptr: *const f64 = std::ptr::null();
+        unsafe { alloc_q_gpu(&mut ptr, NA + 2) };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2).to_vec() };
+        vec![0.0; NA as usize + 2] 
+    }
 
     #[kernelversion]
     fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    fn alloc_r() -> Vec<f64> { 
+        let mut ptr: *const f64 = std::ptr::null();
+        unsafe { alloc_r_gpu(&mut ptr, NA + 2) };
+        let slice = unsafe { std::slice::from_raw_parts(ptr, NA + 2).to_vec() };
+        vec![0.0; NA as usize + 2] 
+    }
 
 
     // y = a * x (sequential)
