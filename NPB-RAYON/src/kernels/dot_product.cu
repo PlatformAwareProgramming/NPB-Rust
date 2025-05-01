@@ -70,13 +70,13 @@ double* h_partial_sum;
 
 
 int *d_colidx;
-void alloc_colidx_gpu(double** x, int m) {
+void alloc_colidx_gpu(int** x, int m) {
     CUDA_CHECK(cudaMalloc((void**)x, m * sizeof(double)));
     d_colidx = *x;
 }
 
 int *d_rowstr;
-void alloc_rowstr_gpu(double** x, int m) {
+void alloc_rowstr_gpu(int** x, int m) {
     CUDA_CHECK(cudaMalloc((void**)x, m * sizeof(double)));
     d_rowstr = *x;
 }
