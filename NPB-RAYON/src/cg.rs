@@ -27,6 +27,7 @@ mod cg {
         fn launch_csr_matvec_mul(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
         fn launch_scalarvecmul1_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
         fn launch_scalarvecmul2_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
+        fn launch_norm_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
         fn alloc_vectors_gpu(m:i32, n: i32);
         fn alloc_colidx_gpu(out_ptr: *mut *const c_int, m:i32);
         fn alloc_rowstr_gpu(out_ptr: *mut *const c_int, m:i32);
@@ -1267,17 +1268,14 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn norm(x: &[f64], y: &[f64]) -> f64 {
-        let sum = (&x[0..(LASTCOL - FIRSTCOL + 1) as usize])
-            .into_iter()
-            .zip(&y[0..(LASTCOL - FIRSTCOL + 1) as usize])
-            .map(|(x, y)| {
-                let d = *x - *y;
-                d * d
-        })
-        .sum();
 
-        f64::sqrt(sum)
-
+        let mut result: f64 = 0.0;
+    
+        unsafe {
+            launch_norm_gpu(x.as_ptr(), y.as_ptr(), &mut result as *mut f64, (LASTCOL - FIRSTCOL + 1) as i32);
+        }
+    
+        result    
     }
 
 

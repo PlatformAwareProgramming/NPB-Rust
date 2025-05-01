@@ -17,14 +17,14 @@ extern "C" {
 // Kernel CUDA para multiplicar os vetores
     __global__ void dot_product_kernel(const double* x, const double* y, double* partial_sum, int n, int NA) {
         __shared__ double share_data[256]; // Cache compartilhado para redução
-        int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
+        int i = threadIdx.x + blockIdx.x * blockDim.x;
         int local_id = threadIdx.x;
 
         share_data[local_id] = 0.0;
 
-        if(thread_id >= NA) { return; }
+        if(i >= NA) { return; }
 
-        share_data[threadIdx.x] = x[thread_id] * y[thread_id];
+        share_data[threadIdx.x] = x[i] * y[i];
 
         __syncthreads();
         for(int i=blockDim.x/2; i>0; i>>=1){
@@ -77,6 +77,33 @@ extern "C" {
         }
     }
 
+    __global__ void norm_gpu(const double* x, const double* y, double* partial_sum, int n, int NA) {
+
+        __shared__ double share_data[256]; // Cache compartilhado para redução
+        int i = threadIdx.x + blockIdx.x * blockDim.x;
+        int local_id = threadIdx.x;
+
+        share_data[local_id] = 0.0;
+
+        if(i >= NA) { return; }
+
+        { 
+            double d;
+            d = x[i] - y[i]; 
+            share_data[threadIdx.x] = d * d;
+        }
+
+        __syncthreads();
+        for(int i=blockDim.x/2; i>0; i>>=1){
+            if(local_id<i){share_data[local_id]+=share_data[local_id+i];}
+            __syncthreads();
+        }
+
+        if(local_id == 0) { 
+            partial_sum[blockIdx.x] = share_data[0]; 
+        }
+    }
+
 int *d_colidx_;
 int *d_rowstr_;
 double *d_aa;
@@ -84,7 +111,6 @@ double *d_yy;
 double *d_xx;
 double *d_partial_sum;
 double* h_partial_sum;
-
 
 int *d_colidx;
 void alloc_colidx_gpu(int** x, int m) {
@@ -136,20 +162,18 @@ void alloc_r_gpu(double** x, int m) {
 
 void alloc_vectors_gpu(int m, int n) {
 
-    int threads = 256;
-    int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
-    int allthreads = threads*blocks;
+    int blockSize = 256;
+    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
 
     CUDA_CHECK(cudaMalloc((void**)&d_xx, n * sizeof(double)));
     CUDA_CHECK(cudaMalloc((void**)&d_yy, n * sizeof(double)));
-    CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, blocks * sizeof(double)));
+    CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));
 
     CUDA_CHECK(cudaMalloc(&d_aa, m * sizeof(double)));
     CUDA_CHECK(cudaMalloc(&d_colidx_, m * sizeof(int)));
     CUDA_CHECK(cudaMalloc(&d_rowstr_, (n+1) * sizeof(int)));
 
-    h_partial_sum = (double*) malloc(blocks * sizeof(double));
-
+    h_partial_sum = (double*) malloc(gridSize * sizeof(double));
 }
 
 void free_vectors_gpu() {
@@ -172,11 +196,11 @@ void dot_product_gpu(const double* x,
                      double* result, 
                      int n) {
 
-    int threads = 256;
-    int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
-    int allthreads = threads*blocks;
+    int blockSize = 256;
+    int GridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+    int allthreads = threads*GridSize;
 
-    if (threads & (threads - 1)) {
+    if (blockSize & (blockSize - 1)) {
         fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
         exit(EXIT_FAILURE);
     }
@@ -184,15 +208,15 @@ void dot_product_gpu(const double* x,
     CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
 
-    dot_product_kernel<<<blocks, threads>>>(d_xx, d_yy, d_partial_sum, n, allthreads);
+    dot_product_kernel<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n, allthreads);
   
     CUDA_CHECK(cudaDeviceSynchronize());
     CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
 
-    CUDA_CHECK(cudaMemcpy(h_partial_sum, d_partial_sum, blocks * sizeof(double), cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(h_partial_sum, d_partial_sum, GridSize * sizeof(double), cudaMemcpyDeviceToHost));
  
     *result = 0.0;
-    for (int i = 0; i < blocks; i++) {
+    for (int i = 0; i < GridSize; i++) {
         *result += h_partial_sum[i];
     }
 }
@@ -255,8 +279,7 @@ void launch_csr_matvec_mul(
         CUDA_CHECK(cudaDeviceSynchronize());
         CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
     
-        CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));
-     
+        CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));     
  }
 
  void launch_scalarvecmul2_gpu(
@@ -284,5 +307,35 @@ void launch_csr_matvec_mul(
         CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));        
 
  }
+
+void launch_norm_gpu(const double* x, 
+                     const double* y, 
+                     double* result, 
+                     int n) {
+
+    int blockSize = 256;
+    int GridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+    int allthreads = threads*GridSize;
+
+    if (blockSize & (blockSize - 1)) {
+        fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
+        exit(EXIT_FAILURE);
+    }
+ 
+    CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
+
+    norm_gpu<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n, allthreads);
+  
+    CUDA_CHECK(cudaDeviceSynchronize());
+    CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
+
+    CUDA_CHECK(cudaMemcpy(h_partial_sum, d_partial_sum, GridSize * sizeof(double), cudaMemcpyDeviceToHost));
+ 
+    *result = 0.0;
+    for (int i = 0; i < GridSize; i++) {
+        *result += h_partial_sum[i];
+    }
+}
 
 }
