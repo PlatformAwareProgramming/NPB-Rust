@@ -198,7 +198,7 @@ void dot_product_gpu(const double* x,
 
     int blockSize = 256;
     int GridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
-    int allthreads = threads*GridSize;
+    int allthreads = blockSize*GridSize;
 
     if (blockSize & (blockSize - 1)) {
         fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
@@ -315,7 +315,7 @@ void launch_norm_gpu(const double* x,
 
     int blockSize = 256;
     int GridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
-    int allthreads = threads*GridSize;
+    int allthreads = blockSize*GridSize;
 
     if (blockSize & (blockSize - 1)) {
         fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
