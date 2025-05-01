@@ -9,6 +9,7 @@ extern "C" {
 
 void dot_product_gpu(const double* x, const double* y, double* result, int n);
 
+
 #ifdef __cplusplus
 }
 #endif

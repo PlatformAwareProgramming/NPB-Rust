@@ -24,7 +24,7 @@ mod cg {
     use std::os::raw::c_int;
     unsafe extern "C" {
         fn dot_product_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
-        fn alloc_vectors_gpu(n: i32);
+        fn launch_csr_matvec_mul(h_colidx: *const i32, h_rowstr: *const i32, h_a: *const f64, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);        fn alloc_vectors_gpu(n: i32);
         fn free_vectors_gpu();
     }
 
@@ -994,20 +994,23 @@ mod cg {
         x: &[f64],
         y: &mut[f64],
     ) {
-        (
-            &rowstr[0..NA as usize],
-            &rowstr[1..NA as usize + 1],
-            &mut y[0..(LASTCOL - FIRSTCOL + 1) as usize],
-        )
-            .into_par_iter()
-            .for_each(|(j, j1, y)| {
-                *y = (&a[*j as usize..*j1 as usize])
-                    .into_iter()
-                    .zip(&colidx[*j as usize..*j1 as usize])
-                    .map(|(a, colidx)| a * x[*colidx as usize])
-                    .sum();
-            });
-    }
+        let nnz = a.len() as i32;
+        let num_rows = y.len() as i32;
+        let x_len = x.len() as i32;
+    
+        unsafe {
+            launch_csr_matvec_mul(
+                colidx.as_ptr(),
+                rowstr.as_ptr(),
+                a.as_ptr(),
+                x.as_ptr(),
+                y.as_mut_ptr(),
+                nnz,
+                num_rows,
+                x_len,
+            );
+        }
+        }
 
     #[kernelversion]
     fn allocvectors(n:i32) {}
