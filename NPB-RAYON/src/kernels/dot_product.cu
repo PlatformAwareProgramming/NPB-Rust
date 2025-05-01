@@ -61,7 +61,8 @@ extern "C" {
 
 
 double *d_a;
-int *d_colidx, *d_rowstr;
+int *d_colidx;
+int *d_rowstr;
 double *d_x;
 double *d_y;
 double *d_partial_sum;
@@ -155,6 +156,8 @@ void launch_csr_matvec_mul(
     cudaMalloc(&d_x, x_len * sizeof(double));
     cudaMalloc(&d_y, num_rows * sizeof(double));
 */
+    println("LAUNCH_CSR_MATVEC_MUL(nnz=%d, num_rows=%d, x_len=%d)", nnz, num_rows, x_len);
+
     // 2. Copiar dados do host para o device
     CUDA_CHECK(cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemcpy(d_colidx, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
