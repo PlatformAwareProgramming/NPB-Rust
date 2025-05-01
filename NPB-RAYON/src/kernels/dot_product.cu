@@ -59,6 +59,9 @@ extern "C" {
         }
     }
 
+
+double *d_a;
+int *d_colidx, *d_rowstr;
 double *d_x;
 double *d_y;
 double *d_partial_sum;
@@ -143,8 +146,8 @@ void launch_csr_matvec_mul(
     int x_len
 ) {
     // 1. Alocar memória no device
-    double *d_a, *d_x, *d_y;
-    int *d_colidx, *d_rowstr;
+//    double *d_a, *d_x, *d_y;
+//    int *d_colidx, *d_rowstr;
 
 /*    cudaMalloc(&d_a, nnz * sizeof(double));
     cudaMalloc(&d_colidx, nnz * sizeof(int));
