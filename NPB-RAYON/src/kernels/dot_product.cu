@@ -60,18 +60,13 @@ extern "C" {
     }
 
 
-double *d_a;
-int *d_colidx;
-int *d_rowstr;
 double *d_x;
 double *d_y;
 double *d_partial_sum;
 double* h_partial_sum;
 
 
-void alloc_vectors_gpu(int m, int n) {
-
-    printf("ALLOC_VECTORS_GPU(m=%d, n=%d)\n", m, n);
+void alloc_vectors_gpu(int n) {
 
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
@@ -81,23 +76,15 @@ void alloc_vectors_gpu(int m, int n) {
     CUDA_CHECK(cudaMalloc((void**)&d_y, n * sizeof(double)));
     CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, blocks * sizeof(double)));
 
-//    CUDA_CHECK(cudaMalloc(&d_a, m * sizeof(double)));
-//    CUDA_CHECK(cudaMalloc(&d_colidx, m * sizeof(int)));
-//    CUDA_CHECK(cudaMalloc(&d_rowstr, (n+1) * sizeof(int)));
-
     h_partial_sum = (double*) malloc(blocks * sizeof(double));
 
 }
 
 void free_vectors_gpu() {
 
-//    CUDA_CHECK(cudaFree(d_colidx));
-//    CUDA_CHECK(cudaFree(d_rowstr));
-//    CUDA_CHECK(cudaFree(d_a));
     CUDA_CHECK(cudaFree(d_x));
     CUDA_CHECK(cudaFree(d_y));
     CUDA_CHECK(cudaFree(d_partial_sum));
-    
     free(h_partial_sum);
 }
 
@@ -108,8 +95,6 @@ void dot_product_gpu(const double* x,
                      const double* y, 
                      double* result, 
                      int n) {
-
-    printf("DOT_PRODUCT_GPU(%d)\n", n);
 
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
@@ -137,35 +122,36 @@ void dot_product_gpu(const double* x,
 }
 
 void launch_csr_matvec_mul(
-    const double* h_a,
     const int* h_colidx,
     const int* h_rowstr,
+    const double* h_a,
     const double* h_x,
     double* h_y,
     int nnz,
     int num_rows,
     int x_len
 ) {
-    // Alocar memória na GPU
-    double *d_a = nullptr, *d_x = nullptr, *d_y = nullptr;
-    int *d_colidx = nullptr, *d_rowstr = nullptr;
+    // 1. Alocar memória no device
+    double *d_a, *d_x, *d_y;
+    int *d_colidx, *d_rowstr;
 
-    cudaMalloc((void**)&d_a, nnz * sizeof(double));
-    cudaMalloc((void**)&d_colidx, nnz * sizeof(int));
-    cudaMalloc((void**)&d_rowstr, (num_rows + 1) * sizeof(int));
-    cudaMalloc((void**)&d_x, x_len * sizeof(double));
-    cudaMalloc((void**)&d_y, num_rows * sizeof(double));  // y só precisa de cópia de volta
+    cudaMalloc(&d_a, nnz * sizeof(double));
+    cudaMalloc(&d_colidx, nnz * sizeof(int));
+    cudaMalloc(&d_rowstr, (num_rows + 1) * sizeof(int));
+    cudaMalloc(&d_x, x_len * sizeof(double));
+    cudaMalloc(&d_y, num_rows * sizeof(double));
 
-    // Transferências de memória: host -> device (somente leitura)
+    // 2. Copiar dados do host para o device
     cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_colidx, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_rowstr, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_x, h_x, x_len * sizeof(double), cudaMemcpyHostToDevice);
 
-    // Configuração do kernel
+    // 3. Configurar execução do kernel
     int blockSize = 256;
     int gridSize = (num_rows + blockSize - 1) / blockSize;
 
+    // 4. Chamar o kernel
     csr_matvec_kernel<<<gridSize, blockSize>>>(
         d_a, d_colidx, d_rowstr, d_x, d_y, num_rows
     );
@@ -173,10 +159,10 @@ void launch_csr_matvec_mul(
     // Sincronizar GPU (garante conclusão)
     cudaDeviceSynchronize();
 
-    // Transferência de resultado: device -> host
+    // 5. Copiar resultado de volta para o host
     cudaMemcpy(h_y, d_y, num_rows * sizeof(double), cudaMemcpyDeviceToHost);
 
-    // Liberar memória na GPU
+    // 6. Liberar memória no device
     cudaFree(d_a);
     cudaFree(d_colidx);
     cudaFree(d_rowstr);
