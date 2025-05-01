@@ -971,7 +971,7 @@ mod cg {
         //unsafe { 
             let mut ptr: *const f64 = std::ptr::null();
             unsafe { alloc_a_gpu(&mut ptr, NZ as i32) };
-            /*let slice: &[f64] =*/ unsafe { std::slice::from_raw_parts(ptr, NZ) } //;
+            /*let slice: &[f64] =*/ unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() } //;
         //}
         //vec![0.0; NZ] 
     }
