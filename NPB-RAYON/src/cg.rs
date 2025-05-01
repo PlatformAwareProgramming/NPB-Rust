@@ -34,7 +34,7 @@ mod cg {
             num_rows: i32,
             x_len: i32,
         );
-        fn alloc_vectors_gpu(m:i32, n: i32);
+        fn alloc_vectors_gpu(n: i32);
         fn free_vectors_gpu();
     }
 
@@ -204,7 +204,7 @@ mod cg {
         let mut q: Vec<f64> = vec![0.0; NA as usize + 2];
         let mut r: Vec<f64> = vec![0.0; NA as usize + 2];
 
-        allocvectors(NZ as i32, (NA as usize + 2) as i32);
+        allocvectors((NA as usize + 2) as i32);
 
         let naa: i32 = NA;
         let nzz: usize = NZ;
@@ -1023,13 +1023,13 @@ mod cg {
     }
 
     #[kernelversion]
-    fn allocvectors(m: i32, n:i32) {}
+    fn allocvectors(n:i32) {}
 
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn allocvectors(m: i32, n:i32) {}
+    fn allocvectors(n:i32) {}
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn allocvectors(m: i32, n:i32) { unsafe { alloc_vectors_gpu(m, n) } }
+    fn allocvectors(n:i32) { unsafe { alloc_vectors_gpu(n) } }
 
     #[kernelversion]
     fn freevectors() {}
