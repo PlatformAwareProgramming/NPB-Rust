@@ -191,7 +191,7 @@ mod cg {
     fn alloc_a() -> Vec<f64> { 
         unsafe { 
             let mut ptr: *const f64 = std::ptr::null();
-            alloc_a_gpu(&mut ptr, NZ);
+            alloc_a_gpu(&mut ptr, NZ as i32);
             let slice: &[f64] = std::slice::from_raw_parts(ptr, len as usize);
         }
         vec![0.0; NZ] 
