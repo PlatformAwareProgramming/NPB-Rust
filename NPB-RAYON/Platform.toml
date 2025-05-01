@@ -2,7 +2,7 @@
 acc_manufacturer = "NVIDIA"
 acc_memory_type = "DDR3"
 acc_count = 1
-acc_backend = ["CUDA44","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_11_0"]
+acc_backend = ["CUDA4","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_11_0"]
 acc_architecture = "Maxwell"
 acc_model = "NVIDIAGeForce_940MX"
 acc_cpu_count = 1
@@ -12,7 +12,7 @@ acc_tdp = 23
 acc_type = "GPU"
 
 [processor]
-cpu_core_count = 1
+cpu_core_count = 8
 cpu_count = 1
 cpu_core_threads_count = 2
 cpu_simd = ["AVX2"]

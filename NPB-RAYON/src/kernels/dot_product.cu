@@ -50,19 +50,6 @@ __global__ void dot_product_kernel(const double* x, const double* y, double* par
 }
 
 
-int next_power_of_two(int n) {
-    assert(n > 0); // Garante que n seja maior que zero
-
-    n--;
-    n |= n >> 1;
-    n |= n >> 2;
-    n |= n >> 4;
-    n |= n >> 8;
-    n |= n >> 16;
-    n++;
-
-    return n;
-}
 
 double *d_x;
 double *d_y;
@@ -70,7 +57,9 @@ double *d_partial_sum;
 double* h_partial_sum;
 
 
-void allocvectors(int n) {
+void alloc_vectors_gpu(int n) {
+
+    printf("ALLOC GPU %d\n", n);
 
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
@@ -82,9 +71,11 @@ void allocvectors(int n) {
 
     h_partial_sum = (double*) malloc(blocks * sizeof(double));
 
+    printf("ALLOC GPU END\n");
+
 }
 
-void freevectors() {
+void free_vectors_gpu() {
 
     CUDA_CHECK(cudaFree(d_x));
     CUDA_CHECK(cudaFree(d_y));

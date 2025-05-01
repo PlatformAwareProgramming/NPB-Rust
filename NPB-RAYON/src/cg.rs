@@ -6,7 +6,7 @@ fn main() {
 
 use platform_aware::{platformaware};
 
-#[platformaware(matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
+#[platformaware(allocvectors, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
 mod cg {
 
     use crate::common::print_results::*;
@@ -24,7 +24,7 @@ mod cg {
     use std::os::raw::c_int;
     unsafe extern "C" {
         fn dot_product_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
-        fn alloc_vectors_gpu();
+        fn alloc_vectors_gpu(n: i32);
         fn free_vectors_gpu();
     }
 
@@ -156,6 +156,7 @@ mod cg {
     pub const T_BENCH: usize = 1;
     pub const T_CONJ_GRAD: usize = 2;
     pub const T_LAST: usize = 3;
+    pub const T_VECVECMUL: usize = 4;
     pub const FIRSTROW: i32 = 0;
     pub const LASTROW: i32 = NA - 1;
     pub const FIRSTCOL: i32 = 0;
@@ -192,7 +193,7 @@ mod cg {
         let mut q: Vec<f64> = vec![0.0; NA as usize + 2];
         let mut r: Vec<f64> = vec![0.0; NA as usize + 2];
 
-        allocvectors(NA + 2);
+        allocvectors((NA as usize + 2) as i32);
 
         let naa: i32 = NA;
         let nzz: usize = NZ;
@@ -208,6 +209,7 @@ mod cg {
         timers.clear(T_INIT);
         timers.clear(T_BENCH);
         timers.clear(T_CONJ_GRAD);
+        timers.clear(T_VECVECMUL);
 
         timers.start(T_INIT);
 
@@ -268,7 +270,7 @@ mod cg {
                 &mut p[..],
                 &mut q[..],
                 &mut r[..],
-                &mut rnorm,
+                &mut rnorm, &mut timers
             );
 
             /*
@@ -300,6 +302,8 @@ mod cg {
 
         timers.start(T_BENCH);
 
+        timers.clear(T_VECVECMUL);
+
         /*
         * --------------------------------------------------------------------
         * ---->
@@ -321,7 +325,7 @@ mod cg {
                 &mut p[..],
                 &mut q[..],
                 &mut r[..],
-                &mut rnorm,
+                &mut rnorm, &mut timers
             );
             if TIMERS {
                 timers.stop(T_CONJ_GRAD);
@@ -416,6 +420,9 @@ mod cg {
         };
         printer(info);
 
+
+        println!("VECVECMUL timing: {}", timers.read(T_VECVECMUL).as_secs_f64());
+
         /*
         * ---------------------------------------------------------------------
         * more timers
@@ -475,7 +482,7 @@ mod cg {
         p: &mut [f64],
         q: &mut [f64],
         r: &mut [f64],
-        rnorm: &mut f64,
+        rnorm: &mut f64, timers: &mut Timer
     ) {
         let cgitmax: i32 = 25;
         let (mut d, mut rho, mut rho0, mut alpha, mut beta): (f64, f64, f64, f64, f64);
@@ -496,7 +503,10 @@ mod cg {
         * now, obtain the norm of r: First, sum squares of r elements locally...
         * --------------------------------------------------------------------
         */
+
+        timers.start(T_VECVECMUL);
         rho = vecvecmul(r, r);
+        timers.stop(T_VECVECMUL);
         
         /* the conj grad iteration loop */
         for _ in 1..cgitmax {
@@ -521,8 +531,9 @@ mod cg {
             * --------------------------------------------------------------------
             */
 
-
+            timers.start(T_VECVECMUL);
             d = vecvecmul(p, q);
+            timers.stop(T_VECVECMUL);
 
             /*
             * --------------------------------------------------------------------
@@ -548,7 +559,9 @@ mod cg {
             scalarvecmul2(alpha, p, z);
             scalarvecmul2(-alpha, q, r);
 
+            timers.start(T_VECVECMUL);
             rho = vecvecmul(r, r);
+            timers.stop(T_VECVECMUL);
 
             /*
             * ---------------------------------------------------------------------
@@ -995,7 +1008,7 @@ mod cg {
     fn allocvectors(n:i32) {}
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn allocvectors(n:i32) { unsafe { alloc_vectors_gpu() } }
+    fn allocvectors(n:i32) { unsafe { alloc_vectors_gpu(n) } }
 
     #[kernelversion]
     fn freevectors() {}
