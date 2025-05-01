@@ -24,7 +24,7 @@ __global__ void dot_product_kernel(const double* x, const double* y, double* par
 
 	if(thread_id >= NA){return;}
 
-	share_data[threadIdx.x] = p[thread_id] * q[thread_id];
+	share_data[threadIdx.x] = x[thread_id] * y[thread_id];
 
 	__syncthreads();
 	for(int i=blockDim.x/2; i>0; i>>=1){
