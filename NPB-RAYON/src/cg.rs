@@ -6,7 +6,7 @@ fn main() {
 
 use platform_aware::{platformaware};
 
-#[platformaware(allocvectors, alloc_a, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
+#[platformaware(allocvectors, alloc_a, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
 mod cg {
 
     use crate::common::print_results::*;
@@ -24,18 +24,16 @@ mod cg {
     use std::os::raw::c_int;
     unsafe extern "C" {
         fn dot_product_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
-        fn launch_csr_matvec_mul(
-            h_a: *const f64,
-            h_colidx: *const i32,
-            h_rowstr: *const i32,
-            h_x: *const f64,
-            h_y: *mut f64,
-            nnz: i32,
-            num_rows: i32,
-            x_len: i32,
-        );
+        fn launch_csr_matvec_mul(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
         fn alloc_vectors_gpu(m:i32, n: i32);
+        fn alloc_colidx_gpu(out_ptr: *mut *const c_int, m:i32);
+        fn alloc_rowstr_gpu(out_ptr: *mut *const c_int, m:i32);
         fn alloc_a_gpu(out_ptr: *mut *const c_double, m:i32);
+        fn alloc_x_gpu(out_ptr: *mut *const c_double, m:i32);
+        fn alloc_p_gpu(out_ptr: *mut *const c_double, m:i32);
+        fn alloc_q_gpu(out_ptr: *mut *const c_double, m:i32);
+        fn alloc_r_gpu(out_ptr: *mut *const c_double, m:i32);
+        fn alloc_z_gpu(out_ptr: *mut *const c_double, m:i32);
         fn free_vectors_gpu();
     }
 
@@ -177,17 +175,11 @@ mod cg {
     pub const EPSILON: f64 = 1.0e-10;
     pub const AMULT: f64 = 1220703125.0;
 
-    fn alloc_colidx() -> Vec<i32> { vec![0; NZ] }
-    fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
     fn alloc_iv() -> Vec<i32> { vec![0; NA as usize] }
     fn alloc_arow() -> Vec<i32> { vec![0; NA as usize] }
     fn alloc_acol() -> Vec<i32> { vec![0; NAZ as usize] }
     fn alloc_aelt() -> Vec<f64> { vec![0.0; NAZ as usize] }
-    fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
-    fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
-    fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
-    fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
-    fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+
 
     /* cg */
     pub fn main() {
@@ -973,6 +965,56 @@ mod cg {
         let slice = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
         vec![0.0; NZ] 
     }
+
+    #[kernelversion]
+    fn alloc_colidx() -> Vec<i32> { vec![0; NZ] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_colidx() -> Vec<i32> { vec![0; NZ] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_colidx() -> Vec<i32> { vec![0; NZ] }
+
+    #[kernelversion]
+    fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+
+    #[kernelversion]
+    fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
+
+    #[kernelversion]
+    fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+
+    #[kernelversion]
+    fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+
+    #[kernelversion]
+    fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+
+    #[kernelversion]
+    fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+
 
     // y = a * x (sequential)
     #[kernelversion]
