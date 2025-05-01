@@ -157,7 +157,7 @@ mod cg {
     pub const T_CONJ_GRAD: usize = 2;
     pub const T_LAST: usize = 3;
     pub const T_VECVECMUL: usize = 4;
-    pub const T_MATVECMUL: usize = 4;
+    pub const T_MATVECMUL: usize = 5;
     pub const FIRSTROW: i32 = 0;
     pub const LASTROW: i32 = NA - 1;
     pub const FIRSTCOL: i32 = 0;
