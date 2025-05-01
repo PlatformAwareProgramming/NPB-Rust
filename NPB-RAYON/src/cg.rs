@@ -968,12 +968,12 @@ mod cg {
     fn alloc_a() -> Vec<f64> { vec![0.0; NZ] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_a() -> Vec<f64> { 
-        unsafe { 
+        //unsafe { 
             let mut ptr: *const f64 = std::ptr::null();
-            alloc_a_gpu(&mut ptr, NZ as i32);
-            let slice: &[f64] = std::slice::from_raw_parts(ptr, NZ);
-        }
-        vec![0.0; NZ] 
+            unsafe { alloc_a_gpu(&mut ptr, NZ as i32) };
+            /*let slice: &[f64] =*/ unsafe { std::slice::from_raw_parts(ptr, NZ) };
+        //}
+        //vec![0.0; NZ] 
     }
 
     // y = a * x (sequential)
