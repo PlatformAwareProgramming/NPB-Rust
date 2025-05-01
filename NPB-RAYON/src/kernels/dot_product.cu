@@ -122,9 +122,9 @@ void dot_product_gpu(const double* x,
 }
 
 void launch_csr_matvec_mul(
+    const double* h_a,
     const int* h_colidx,
     const int* h_rowstr,
-    const double* h_a,
     const double* h_x,
     double* h_y,
     int nnz,
