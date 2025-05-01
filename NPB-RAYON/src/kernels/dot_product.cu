@@ -38,9 +38,9 @@ extern "C" {
     }
 
     __global__ void csr_matvec_kernel(
-        const double* a,
         const int* colidx,
         const int* rowstr,
+        const double* a,
         const double* x,
         double* y,
         int num_rows
@@ -70,6 +70,8 @@ double* h_partial_sum;
 
 void alloc_vectors_gpu(int m, int n) {
 
+    printf("ALLOC_VECTORS_GPU(m=%d, n=%d)", m, n);
+
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
     int allthreads = threads*blocks;
@@ -90,14 +92,12 @@ void alloc_vectors_gpu(int m, int n) {
 
 void free_vectors_gpu() {
 
+    CUDA_CHECK(cudaFree(d_colidx));
+    CUDA_CHECK(cudaFree(d_rowstr));
+    CUDA_CHECK(cudaFree(d_a));
     CUDA_CHECK(cudaFree(d_x));
     CUDA_CHECK(cudaFree(d_y));
     CUDA_CHECK(cudaFree(d_partial_sum));
-    CUDA_CHECK(cudaFree(d_a));
-    CUDA_CHECK(cudaFree(d_colidx));
-    CUDA_CHECK(cudaFree(d_rowstr));
-    CUDA_CHECK(cudaFree(d_x));
-    CUDA_CHECK(cudaFree(d_y));
     
     free(h_partial_sum);
 }
@@ -167,7 +167,7 @@ void launch_csr_matvec_mul(
 
     // 4. Chamar o kernel
     csr_matvec_kernel<<<gridSize, blockSize>>>(
-        d_a, d_colidx, d_rowstr, d_x, d_y, num_rows
+        d_colidx, d_rowstr, d_a, d_x, d_y, num_rows
     );
 
     // Sincronizar GPU (garante conclusão)
