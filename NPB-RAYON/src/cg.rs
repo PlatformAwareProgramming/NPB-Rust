@@ -983,7 +983,7 @@ mod cg {
     fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_rowstr() -> Vec<i32>  { 
-        let mut ptr: *const f32 = std::ptr::null();
+        let mut ptr: *const i32 = std::ptr::null();
         unsafe { alloc_rowstr_gpu(&mut ptr, NA + 1) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 1) as usize).to_vec() };
         vec![0; (NA + 1) as usize] 
