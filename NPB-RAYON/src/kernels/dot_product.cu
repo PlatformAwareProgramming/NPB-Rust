@@ -59,20 +59,20 @@ extern "C" {
         }
     }
 
-    __global__ void scalarvecmul1_gpu(double alpha, const double* x, const double* y, int n) {
+    __global__ void scalarvecmul1_gpu(double alpha, const double* x, double* y, int n) {
         
         int i = threadIdx.x + blockIdx.x * blockDim.x;
 
-        if(thread_id < n) { 
+        if(i < n) { 
             y[i] = x[i] + alpha*y[i];
         }
     }
 
-    __global__ void scalarvecmul2_gpu(double alpha, const double* x, const double* y, int n) {
+    __global__ void scalarvecmul2_gpu(double alpha, const double* x, double* y, int n) {
         
         int i = threadIdx.x + blockIdx.x * blockDim.x;
 
-        if(thread_id < n) { 
+        if(i < n) { 
             y[i] += alpha*x[i];
         }
     }
@@ -236,7 +236,7 @@ void launch_csr_matvec_mul(
  void launch_scalarvecmul1_gpu(
     const double alpha, 
     const double* x, 
-    const double* y, 
+    double* y, 
     int n) {
 
         int blockSize = 256;
@@ -262,8 +262,8 @@ void launch_csr_matvec_mul(
  void launch_scalarvecmul2_gpu(
     const double alpha, 
     const double* x, 
-    const double* y, 
-    int size) {
+    double* y, 
+    int n) {
 
         int blockSize = 256;
         int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
