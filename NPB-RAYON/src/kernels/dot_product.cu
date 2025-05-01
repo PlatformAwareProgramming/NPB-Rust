@@ -22,7 +22,7 @@ __global__ void dot_product_kernel(const double* x, const double* y, double* par
 
 	share_data[local_id] = 0.0;
 
-	if(thread_id >= NA){return;}
+	if(thread_id >= NA) { return; }
 
 	share_data[threadIdx.x] = x[thread_id] * y[thread_id];
 
@@ -32,40 +32,10 @@ __global__ void dot_product_kernel(const double* x, const double* y, double* par
 		__syncthreads();
 	}
 
-	if(local_id==0) { 
+	if(local_id == 0) { 
         partial_sum[blockIdx.x] = share_data[0]; 
     }
 
- /*   
-   if (thread_id < NA) {
-
-    int local_id = threadIdx.x;
-    __syncthreads();
-
-    double temp = 0.0;
-    while (thread_id < n) {
-        temp += x[thread_id] * y[thread_id];
-        thread_id += blockDim.x * gridDim.x;
-    }
-
-    share_data[local_id] = temp;
-
-    __syncthreads();
-
-    // Redução paralela
-    int i = blockDim.x/2;
-    while (i != 0) {
-        if (local_id < i) {
-            share_data[local_id] += share_data[local_id + i];
-        }
-        __syncthreads();
-        i /= 2;
-    }   
-
-    if (local_id == 0)
-        partial_sum[blockIdx.x] = share_data[0];
-    }
-        */
 }
 
 
