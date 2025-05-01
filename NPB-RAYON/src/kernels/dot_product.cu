@@ -38,9 +38,9 @@ extern "C" {
     }
 
     __global__ void csr_matvec_kernel(
+        const double* a,
         const int* colidx,
         const int* rowstr,
-        const double* a,
         const double* x,
         double* y,
         int num_rows
@@ -137,50 +137,46 @@ void dot_product_gpu(const double* x,
 }
 
 void launch_csr_matvec_mul(
+    const double* h_a,
     const int* h_colidx,
     const int* h_rowstr,
-    const double* h_a,
     const double* h_x,
     double* h_y,
     int nnz,
     int num_rows,
     int x_len
 ) {
-    // 1. Alocar memória no device
-    double *d_a, *d_x, *d_y;
-    int *d_colidx, *d_rowstr;
+    // Alocar memória na GPU
+    double *d_a = nullptr, *d_x = nullptr, *d_y = nullptr;
+    int *d_colidx = nullptr, *d_rowstr = nullptr;
 
-    cudaMalloc(&d_a, nnz * sizeof(double));
-    cudaMalloc(&d_colidx, nnz * sizeof(int));
-    cudaMalloc(&d_rowstr, (num_rows + 1) * sizeof(int));
-    cudaMalloc(&d_x, x_len * sizeof(double));
-    cudaMalloc(&d_y, num_rows * sizeof(double));
+    cudaMalloc((void**)&d_a, nnz * sizeof(double));
+    cudaMalloc((void**)&d_colidx, nnz * sizeof(int));
+    cudaMalloc((void**)&d_rowstr, (num_rows + 1) * sizeof(int));
+    cudaMalloc((void**)&d_x, x_len * sizeof(double));
+    cudaMalloc((void**)&d_y, num_rows * sizeof(double));  // y só precisa de cópia de volta
 
-    printf("LAUNCH_CSR_MATVEC_MUL(nnz=%d, num_rows=%d, x_len=%d)\n", nnz, num_rows, x_len);
+    // Transferências de memória: host -> device (somente leitura)
+    cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_colidx, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_rowstr, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_x, h_x, x_len * sizeof(double), cudaMemcpyHostToDevice);
 
-    // 2. Copiar dados do host para o device
-    CUDA_CHECK(cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_colidx, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_rowstr, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_x, h_x, x_len * sizeof(double), cudaMemcpyHostToDevice));
-
-    // 3. Configurar execução do kernel
+    // Configuração do kernel
     int blockSize = 256;
     int gridSize = (num_rows + blockSize - 1) / blockSize;
 
-    // 4. Chamar o kernel
     csr_matvec_kernel<<<gridSize, blockSize>>>(
-        d_colidx, d_rowstr, d_a, d_x, d_y, num_rows
+        d_a, d_colidx, d_rowstr, d_x, d_y, num_rows
     );
 
     // Sincronizar GPU (garante conclusão)
-    CUDA_CHECK(cudaDeviceSynchronize());
-    CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
+    cudaDeviceSynchronize();
 
-    // 5. Copiar resultado de volta para o host
-    CUDA_CHECK(cudaMemcpy(h_y, d_y, num_rows * sizeof(double), cudaMemcpyDeviceToHost));
+    // Transferência de resultado: device -> host
+    cudaMemcpy(h_y, d_y, num_rows * sizeof(double), cudaMemcpyDeviceToHost);
 
-    // 6. Liberar memória no device
+    // Liberar memória na GPU
     cudaFree(d_a);
     cudaFree(d_colidx);
     cudaFree(d_rowstr);
