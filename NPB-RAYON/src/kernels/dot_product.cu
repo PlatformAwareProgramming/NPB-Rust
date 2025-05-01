@@ -48,8 +48,6 @@ double* h_partial_sum;
 
 void alloc_vectors_gpu(int n) {
 
-    printf("ALLOC GPU %d\n", n);
-
     int threads = 256;
     int blocks = (n + threads - 1) / threads; // Ajusta o número de blocos dinamicamente
     int allthreads = threads*blocks;
@@ -59,8 +57,6 @@ void alloc_vectors_gpu(int n) {
     CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, blocks * sizeof(double)));
 
     h_partial_sum = (double*) malloc(blocks * sizeof(double));
-
-    printf("ALLOC GPU END\n");
 
 }
 

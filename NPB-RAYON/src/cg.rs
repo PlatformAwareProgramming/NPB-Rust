@@ -157,6 +157,7 @@ mod cg {
     pub const T_CONJ_GRAD: usize = 2;
     pub const T_LAST: usize = 3;
     pub const T_VECVECMUL: usize = 4;
+    pub const T_MATVECMUL: usize = 4;
     pub const FIRSTROW: i32 = 0;
     pub const LASTROW: i32 = NA - 1;
     pub const FIRSTCOL: i32 = 0;
@@ -210,6 +211,7 @@ mod cg {
         timers.clear(T_BENCH);
         timers.clear(T_CONJ_GRAD);
         timers.clear(T_VECVECMUL);
+        timers.clear(T_MATVECMUL);
 
         timers.start(T_INIT);
 
@@ -303,6 +305,7 @@ mod cg {
         timers.start(T_BENCH);
 
         timers.clear(T_VECVECMUL);
+        timers.clear(T_MATVECMUL);
 
         /*
         * --------------------------------------------------------------------
@@ -422,6 +425,7 @@ mod cg {
 
 
         println!("VECVECMUL timing: {}", timers.read(T_VECVECMUL).as_secs_f64());
+        println!("MATVECMUL timing: {}", timers.read(T_MATVECMUL).as_secs_f64());
 
         /*
         * ---------------------------------------------------------------------
@@ -523,7 +527,9 @@ mod cg {
             * the unrolled-by-8 version below is significantly faster
             * on the Cray t3d - overall speed of code is 1.5 times faster.
             */
+            timers.start(T_MATVECMUL);
             matvecmul(colidx,rowstr, a, p, q);
+            timers.stop(T_MATVECMUL);
     
             /*
             * --------------------------------------------------------------------
@@ -586,7 +592,9 @@ mod cg {
         * the partition submatrix-vector multiply
         * ---------------------------------------------------------------------
         */
+        timers.start(T_MATVECMUL);
         matvecmul(colidx,rowstr, a, z, r);
+        timers.stop(T_MATVECMUL);
 
         /*
         * ---------------------------------------------------------------------
