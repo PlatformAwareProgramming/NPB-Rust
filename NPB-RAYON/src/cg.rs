@@ -1031,7 +1031,7 @@ mod cg {
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_colidx_d() -> Vec<i32> { 
         println!("alloc_colidx_d 1");
-        let mut ptr: *mut i32 = std::ptr::null();
+        let mut ptr: *mut i32 = std::mut_ptr::null();
         println!("alloc_colidx_d 2");
         unsafe { alloc_colidx_gpu(&mut ptr, NZ as i32) };
         println!("alloc_colidx_d 3");
