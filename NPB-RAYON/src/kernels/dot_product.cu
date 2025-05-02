@@ -133,13 +133,6 @@ extern "C" {
         }
     }
 
-
-//int *d_colidx_;
-//int *d_rowstr_;
-//double *d_aa;
-//double *d_yy;
-//double *d_xx;
-
 double *d_partial_sum;
 double* h_partial_sum;
 
@@ -196,13 +189,7 @@ void alloc_vectors_gpu(int m, int n) {
     int blockSize = 256;
     int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
 
-  //  CUDA_CHECK(cudaMalloc((void**)&d_xx, n * sizeof(double)));
- //   CUDA_CHECK(cudaMalloc((void**)&d_yy, n * sizeof(double)));
     CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));
-
- //   CUDA_CHECK(cudaMalloc(&d_aa, m * sizeof(double)));
- //   CUDA_CHECK(cudaMalloc(&d_colidx_, m * sizeof(int)));
- //   CUDA_CHECK(cudaMalloc(&d_rowstr_, (n+1) * sizeof(int)));
 
     h_partial_sum = (double*) malloc(gridSize * sizeof(double));
 }
@@ -271,9 +258,6 @@ void dot_product_gpu(const double* d_xx,
         exit(EXIT_FAILURE);
     }
  
- //   CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
- //   CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
-
     dot_product_kernel<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
   
     CUDA_CHECK(cudaDeviceSynchronize());
@@ -303,14 +287,6 @@ void launch_csr_matvec_mul(
     int num_rows,
     int x_len
 ) {
-    // Alocar memória na GPU
-
-    // Transferências de memória: host -> device (somente leitura)
- //   CUDA_CHECK(cudaMemcpy(d_aa, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
- //   CUDA_CHECK(cudaMemcpy(d_colidx_, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
-//    CUDA_CHECK(cudaMemcpy(d_rowstr_, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
-//    CUDA_CHECK(cudaMemcpy(d_xx, h_x, x_len * sizeof(double), cudaMemcpyHostToDevice));
-
     // Configuração do kernel
     int blockSize = 256;
     int gridSize = (num_rows + blockSize - 1) / blockSize;
@@ -322,11 +298,6 @@ void launch_csr_matvec_mul(
     // Sincronizar GPU (garante conclusão)
     CUDA_CHECK(cudaDeviceSynchronize());
     CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
-
-    // Transferência de resultado: device -> host
-    //CUDA_CHECK(cudaMemcpy(h_y, d_yy, num_rows * sizeof(double), cudaMemcpyDeviceToHost));
-
-    // Liberar memória na GPU
  }
 
  void launch_scalarvecmul1_gpu(
@@ -342,16 +313,11 @@ void launch_csr_matvec_mul(
             fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
             exit(EXIT_FAILURE);
         }
-     
-      //  CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
-      //  CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
     
         scalarvecmul1_gpu<<<gridSize, blockSize>>>(alpha, d_xx, d_yy, n);
       
         CUDA_CHECK(cudaDeviceSynchronize());
         CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
-    
-      //  CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));     
  }
 
  void launch_scalarvecmul2_gpu(
@@ -367,17 +333,11 @@ void launch_csr_matvec_mul(
             fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
             exit(EXIT_FAILURE);
         }
-     
-    //    CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
-    //    CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
     
         scalarvecmul2_gpu<<<gridSize, blockSize>>>(alpha, d_xx, d_yy, n);
       
         CUDA_CHECK(cudaDeviceSynchronize());
         CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
-    
-    //    CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));        
-
  }
 
 void launch_norm_gpu(const double* d_xx, 
@@ -393,9 +353,6 @@ void launch_norm_gpu(const double* d_xx,
         exit(EXIT_FAILURE);
     }
  
-    //CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
-    //CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
-
     norm_gpu<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
   
     CUDA_CHECK(cudaDeviceSynchronize());
