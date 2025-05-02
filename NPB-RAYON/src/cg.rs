@@ -345,7 +345,7 @@ mod cg {
             norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
 
             /* normalize z to obtain x */
-            update_x(norm_temp2, &z[..], &mut x[..]);
+            update_x(norm_temp2, &z[..], &mut x);
            // z.par_iter()
            //     .map(|z| z * norm_temp2)
            //     .collect_into_vec(&mut x);
@@ -428,7 +428,7 @@ mod cg {
             println!("   {:>5}       {:>20.14e}{:>20.13e}", it, rnorm, zeta);
 
             /* normalize z to obtain x */
-            update_x(norm_temp2, &z[..], &mut x[..]);
+            update_x(norm_temp2, &z[..], &mut x);
 
         } /* end of main iter inv pow meth */
 
@@ -1404,14 +1404,14 @@ mod cg {
     }
 
     #[kernelversion]
-    fn update_x(norm_temp2: f64, z: &[f64], x: &mut [f64]) {
+    fn update_x(norm_temp2: f64, z: &[f64], x: &mut Vec<f64>) {
         for j in 0..(LASTCOL - FIRSTCOL + 1) as usize {
             x[j] = norm_temp2 * z[j];
         }
     }
 
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn update_x(norm_temp2: f64, z: &[f64], x: &mut [f64]) {
+    fn update_x(norm_temp2: f64, z: &[f64], x: &mut Vec<f64>) {
       //  for j in 0..(LASTCOL - FIRSTCOL + 1) as usize {
       //      x[j] = norm_temp2 * z[j];
       //  }
@@ -1421,7 +1421,7 @@ mod cg {
     }
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn update_x(norm_temp2: f64, z: &[f64], x: &mut [f64]) {
+    fn update_x(norm_temp2: f64, z: &[f64], x: &mut Vec<f64>) {
         { 
             unsafe { launch_update_x_gpu(norm_temp2, z.as_ptr(), x.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32) }
         }
