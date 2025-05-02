@@ -10,7 +10,6 @@ use platform_aware::{platformaware};
                 init_conj_grad, 
                 update_x, 
                 move_a_to_device, 
-                allocvectors, 
                 alloc_a_h, 
                 alloc_a_d, 
                 alloc_colidx_h, 
@@ -53,7 +52,6 @@ mod cg {
         fn launch_scalarvecmul2_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
         fn launch_norm_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
         fn launch_update_x_gpu(norm_temp2:c_double, z: *const c_double, x: *mut c_double, n:c_int);
-        fn alloc_vectors_gpu(m:i32, n: i32);
         fn alloc_colidx_gpu(out_ptr: *mut *mut c_int, m:i32);
         fn alloc_rowstr_gpu(out_ptr: *mut *mut c_int, m:i32);
         fn alloc_a_gpu(out_ptr: *mut *mut c_double, m:i32);
@@ -242,8 +240,6 @@ mod cg {
         let mut p: Vec<f64> = alloc_p();
         let mut q: Vec<f64> = alloc_q();
         let mut r: Vec<f64> = alloc_r();
-
-        allocvectors(NZ as i32, (NA as usize + 2) as i32);
 
         let naa: i32 = NA;
         let nzz: usize = NZ;
@@ -1252,15 +1248,6 @@ mod cg {
             );
         }
     }
-
-    #[kernelversion]
-    fn allocvectors(m: i32, n:i32) {}
-
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn allocvectors(m: i32, n:i32) {}
-
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn allocvectors(m: i32, n:i32) { unsafe { alloc_vectors_gpu(m, n) } }
 
     #[kernelversion]
     fn freevectors() {}

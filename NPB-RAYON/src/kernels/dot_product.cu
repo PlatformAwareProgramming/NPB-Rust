@@ -183,18 +183,8 @@ void alloc_r_gpu(double** x, int m) {
     d_r = *x;
 }
 
-void alloc_vectors_gpu(int m, int n) {
-
-    int blockSize = 256;
-    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
-
-  //  CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));
-
-  //  h_partial_sum = (double*) malloc(gridSize * sizeof(double));
-}
 
 void free_vectors_gpu() {
-
     CUDA_CHECK(cudaFree(d_colidx));
     CUDA_CHECK(cudaFree(d_rowstr));
     CUDA_CHECK(cudaFree(d_a));
@@ -203,10 +193,7 @@ void free_vectors_gpu() {
     CUDA_CHECK(cudaFree(d_p));
     CUDA_CHECK(cudaFree(d_q));
     CUDA_CHECK(cudaFree(d_r));
-  //  CUDA_CHECK(cudaFree(d_partial_sum));
-
-   // free(h_partial_sum);
-}
+ }
 
 void launch_init_x_gpu(double* x, int n)
 {
