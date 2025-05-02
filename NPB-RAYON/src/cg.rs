@@ -6,7 +6,7 @@ fn main() {
 
 use platform_aware::{platformaware};
 
-#[platformaware(init_x, init_conj_grad, update_x, move_a_to_device, allocvectors, alloc_a, alloc_colidx, alloc_rowstr, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
+#[platformaware(init_x, init_conj_grad, update_x, move_a_to_device, allocvectors, alloc_a_h, alloc_a_d, alloc_colidx, alloc_rowstr, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
 mod cg {
 
     use crate::common::print_results::*;
@@ -208,7 +208,9 @@ mod cg {
         let mut arow: Vec<i32> = alloc_arow();
         let mut acol: Vec<i32> = alloc_acol();
         let mut aelt: Vec<f64> = alloc_aelt();
-        let (mut a, mut d_a): (Vec<f64>,Vec<f64>) = alloc_a();
+        let mut a_h: Vec<f64> = alloc_a_h();
+        let mut a_d: Vec<f64> = alloc_a_d();
+        let mut a = a_h;
         let mut x: Vec<f64> = alloc_x();
         let mut z: Vec<f64> = alloc_z();
         let mut p: Vec<f64> = alloc_p();
@@ -278,7 +280,7 @@ mod cg {
 
         move_a_to_device(&colidx[..], &rowstr[..], &a[..]);
 
-        a = d_a;
+        a = a_d;
 
         /*
         * -------------------------------------------------------------------
@@ -967,17 +969,21 @@ mod cg {
     }
 
     #[kernelversion]
-    fn alloc_a() -> (Vec<f64>,Vec<f64>) { let a = vec![0.0; NZ]; (a, a) }
+    fn alloc_a_h() -> Vec<f64> { vec![0.0; NZ] }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_a() -> (Vec<f64>,Vec<f64>) { let a = vec![0.0; NZ]; (a, a) }
+    fn alloc_a_h() -> Vec<f64> { vec![0.0; NZ] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_a() -> (Vec<f64>,Vec<f64>) { 
-        println!("----------");
+    fn alloc_a_h() -> Vec<f64> { vec![0.0; NZ] }
+
+    #[kernelversion]
+    fn alloc_a_d() -> Vec<f64> { vec![0.0; NZ] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_a_d() -> Vec<f64> { vec![0.0; NZ] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_a_d() -> Vec<f64> { vec![0.0; NZ] }
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_a_gpu(&mut ptr, NZ as i32) };
-        let slice = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
-        println!("+++++++++");
-        (vec![0.0; NZ], slice)
+        unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() }
     }
 
     #[kernelversion]
