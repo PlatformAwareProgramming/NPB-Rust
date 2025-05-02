@@ -46,9 +46,9 @@ mod cg {
     unsafe extern "C" {
         fn launch_init_x_gpu(x: *mut c_double, n: c_int);
         fn launch_init_conj_grad_gpu(x: *mut c_double, q: *mut c_double, z: *mut c_double, r: *mut c_double, p: *mut c_double, n: c_int);
-        fn dot_product_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
+        fn launch_vecvecmul_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
         fn move_a_to_device_gpu (colidx: *const c_int, rowstr: *const c_int, a: *const c_double, nnz: c_int, num_rows: c_int);
-        fn launch_csr_matvec_mul(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
+        fn launch_matvecmul_gpu(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
         fn launch_scalarvecmul1_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
         fn launch_scalarvecmul2_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
         fn launch_norm_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
@@ -1240,7 +1240,7 @@ mod cg {
         let x_len = x.len() as i32;
 
         unsafe {
-            launch_csr_matvec_mul(
+            launch_matvecmul_gpu(
                 a.as_ptr(),
                 colidx.as_ptr(),
                 rowstr.as_ptr(),
@@ -1299,7 +1299,7 @@ mod cg {
         let mut result: f64 = 0.0;
     
         unsafe {
-            dot_product_gpu(x.as_ptr(), y.as_ptr(), &mut result as *mut f64, (LASTCOL - FIRSTCOL + 1) as i32);
+            launch_vecvecmul_gpu(x.as_ptr(), y.as_ptr(), &mut result as *mut f64, (LASTCOL - FIRSTCOL + 1) as i32);
         }
     
         result    

@@ -35,7 +35,7 @@ extern "C" {
         }
     }
 // Kernel CUDA para multiplicar os vetores
-    __global__ void dot_product_kernel(const double* x, const double* y, double* partial_sum, int n) {
+    __global__ void vecvecmul_gpu(const double* x, const double* y, double* partial_sum, int n) {
         __shared__ double share_data[256]; // Cache compartilhado para redução
         int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
         int local_id = threadIdx.x;
@@ -57,7 +57,7 @@ extern "C" {
         }
     }
 
-    __global__ void csr_matvec_kernel(
+    __global__ void matvecmul_gpu(
         const double* a,
         const int* colidx,
         const int* rowstr,
@@ -245,10 +245,10 @@ void launch_init_conj_grad_gpu(double* x, double* q, double* z, double* r, doubl
 }
 
 // Função wrapper para ser chamada do Rust
-void dot_product_gpu(const double* d_xx, 
-                     const double* d_yy, 
-                     double* result, 
-                     int n) {
+void launch_vecvecmul_gpu(const double* d_xx, 
+                          const double* d_yy, 
+                          double* result, 
+                          int n) {
 
     int blockSize = 256;
     int GridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
@@ -258,7 +258,7 @@ void dot_product_gpu(const double* d_xx,
         exit(EXIT_FAILURE);
     }
  
-    dot_product_kernel<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
+    vecvecmul_gpu<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
   
     CUDA_CHECK(cudaDeviceSynchronize());
     CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
@@ -277,7 +277,7 @@ void move_a_to_device_gpu(const int* h_colidx, const int* h_rowstr, const double
     CUDA_CHECK(cudaMemcpy(d_rowstr, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
 }
 
-void launch_csr_matvec_mul(
+void launch_matvecmul_gpu(
     const double* d_aa,
     const int* d_colidx,
     const int* d_rowstr,
@@ -291,7 +291,7 @@ void launch_csr_matvec_mul(
     int blockSize = 256;
     int gridSize = (num_rows + blockSize - 1) / blockSize;
 
-    csr_matvec_kernel<<<gridSize, blockSize>>>(
+    matvecmul_gpu<<<gridSize, blockSize>>>(
         d_aa, d_colidx, d_rowstr, d_xx, d_yy, num_rows
     );
 
