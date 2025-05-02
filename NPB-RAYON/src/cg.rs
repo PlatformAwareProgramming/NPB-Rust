@@ -282,7 +282,7 @@ mod cg {
                 }
             });
 
-        move_a_to_device(&colidx_h[..], &rowstr_h[..], &a_h[..], &mut colidx_d[..], &mut rowstr_d[..], &mut a_d[..]);
+        move_a_to_device(&colidx[..], &rowstr[..], &a[..], &mut colidx_d[..], &mut rowstr_d[..], &mut a_d[..]);
 
         a = a_d;
         colidx = colidx_d;
