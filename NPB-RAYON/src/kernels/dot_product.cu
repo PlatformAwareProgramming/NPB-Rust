@@ -134,11 +134,12 @@ extern "C" {
     }
 
 
-int *d_colidx_;
-int *d_rowstr_;
-double *d_aa;
-double *d_yy;
-double *d_xx;
+//int *d_colidx_;
+//int *d_rowstr_;
+//double *d_aa;
+//double *d_yy;
+//double *d_xx;
+
 double *d_partial_sum;
 double* h_partial_sum;
 
@@ -195,26 +196,29 @@ void alloc_vectors_gpu(int m, int n) {
     int blockSize = 256;
     int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
 
-    CUDA_CHECK(cudaMalloc((void**)&d_xx, n * sizeof(double)));
-    CUDA_CHECK(cudaMalloc((void**)&d_yy, n * sizeof(double)));
+  //  CUDA_CHECK(cudaMalloc((void**)&d_xx, n * sizeof(double)));
+ //   CUDA_CHECK(cudaMalloc((void**)&d_yy, n * sizeof(double)));
     CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));
 
-    CUDA_CHECK(cudaMalloc(&d_aa, m * sizeof(double)));
-    CUDA_CHECK(cudaMalloc(&d_colidx_, m * sizeof(int)));
-    CUDA_CHECK(cudaMalloc(&d_rowstr_, (n+1) * sizeof(int)));
+ //   CUDA_CHECK(cudaMalloc(&d_aa, m * sizeof(double)));
+ //   CUDA_CHECK(cudaMalloc(&d_colidx_, m * sizeof(int)));
+ //   CUDA_CHECK(cudaMalloc(&d_rowstr_, (n+1) * sizeof(int)));
 
     h_partial_sum = (double*) malloc(gridSize * sizeof(double));
 }
 
 void free_vectors_gpu() {
 
-    CUDA_CHECK(cudaFree(d_colidx_));
-    CUDA_CHECK(cudaFree(d_rowstr_));
-    CUDA_CHECK(cudaFree(d_aa));
-    CUDA_CHECK(cudaFree(d_xx));
-    CUDA_CHECK(cudaFree(d_yy));
+    CUDA_CHECK(cudaFree(d_colidx));
+    CUDA_CHECK(cudaFree(d_rowstr));
+    CUDA_CHECK(cudaFree(d_a));
+    CUDA_CHECK(cudaFree(d_x));
+    CUDA_CHECK(cudaFree(d_z));
+    CUDA_CHECK(cudaFree(d_p));
+    CUDA_CHECK(cudaFree(d_q));
+    CUDA_CHECK(cudaFree(d_r));
     CUDA_CHECK(cudaFree(d_partial_sum));
-    
+
     free(h_partial_sum);
 }
 
@@ -254,8 +258,8 @@ void launch_init_conj_grad_gpu(double* x, double* q, double* z, double* r, doubl
 }
 
 // Função wrapper para ser chamada do Rust
-void dot_product_gpu(const double* x, 
-                     const double* y, 
+void dot_product_gpu(const double* d_xx, 
+                     const double* d_yy, 
                      double* result, 
                      int n) {
 
@@ -267,8 +271,8 @@ void dot_product_gpu(const double* x,
         exit(EXIT_FAILURE);
     }
  
-    CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
+ //   CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
+ //   CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
 
     dot_product_kernel<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
   
@@ -290,11 +294,11 @@ void move_a_to_device_gpu(const int* h_colidx, const int* h_rowstr, const double
 }
 
 void launch_csr_matvec_mul(
-    const double* h_a,
-    const int* h_colidx,
-    const int* h_rowstr,
-    const double* h_x,
-    double* h_y,
+    const double* d_aa,
+    const int* d_colidx,
+    const int* d_rowstr,
+    const double* d_xx,
+    double* d_yy,
     int nnz,
     int num_rows,
     int x_len
@@ -302,17 +306,17 @@ void launch_csr_matvec_mul(
     // Alocar memória na GPU
 
     // Transferências de memória: host -> device (somente leitura)
-    CUDA_CHECK(cudaMemcpy(d_aa, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_colidx_, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_rowstr_, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_xx, h_x, x_len * sizeof(double), cudaMemcpyHostToDevice));
+ //   CUDA_CHECK(cudaMemcpy(d_aa, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
+ //   CUDA_CHECK(cudaMemcpy(d_colidx_, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
+//    CUDA_CHECK(cudaMemcpy(d_rowstr_, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
+//    CUDA_CHECK(cudaMemcpy(d_xx, h_x, x_len * sizeof(double), cudaMemcpyHostToDevice));
 
     // Configuração do kernel
     int blockSize = 256;
     int gridSize = (num_rows + blockSize - 1) / blockSize;
 
     csr_matvec_kernel<<<gridSize, blockSize>>>(
-        d_aa, d_colidx_, d_rowstr_, d_xx, d_yy, num_rows
+        d_aa, d_colidx, d_rowstr, d_xx, d_yy, num_rows
     );
 
     // Sincronizar GPU (garante conclusão)
@@ -320,15 +324,15 @@ void launch_csr_matvec_mul(
     CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
 
     // Transferência de resultado: device -> host
-    CUDA_CHECK(cudaMemcpy(h_y, d_yy, num_rows * sizeof(double), cudaMemcpyDeviceToHost));
+    //CUDA_CHECK(cudaMemcpy(h_y, d_yy, num_rows * sizeof(double), cudaMemcpyDeviceToHost));
 
     // Liberar memória na GPU
  }
 
  void launch_scalarvecmul1_gpu(
     const double alpha, 
-    const double* x, 
-    double* y, 
+    const double* d_xx, 
+    double* d_yy, 
     int n) {
 
         int blockSize = 256;
@@ -339,21 +343,21 @@ void launch_csr_matvec_mul(
             exit(EXIT_FAILURE);
         }
      
-        CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
-        CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
+      //  CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
+      //  CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
     
         scalarvecmul1_gpu<<<gridSize, blockSize>>>(alpha, d_xx, d_yy, n);
       
         CUDA_CHECK(cudaDeviceSynchronize());
         CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
     
-        CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));     
+      //  CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));     
  }
 
  void launch_scalarvecmul2_gpu(
     const double alpha, 
-    const double* x, 
-    double* y, 
+    const double* d_xx, 
+    double* d_yy, 
     int n) {
 
         int blockSize = 256;
@@ -364,20 +368,20 @@ void launch_csr_matvec_mul(
             exit(EXIT_FAILURE);
         }
      
-        CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
-        CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
+    //    CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
+    //    CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
     
         scalarvecmul2_gpu<<<gridSize, blockSize>>>(alpha, d_xx, d_yy, n);
       
         CUDA_CHECK(cudaDeviceSynchronize());
         CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
     
-        CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));        
+    //    CUDA_CHECK(cudaMemcpy(y, d_yy, n * sizeof(double), cudaMemcpyDeviceToHost));        
 
  }
 
-void launch_norm_gpu(const double* x, 
-                     const double* y, 
+void launch_norm_gpu(const double* d_xx, 
+                     const double* d_yy, 
                      double* result, 
                      int n) {
 
@@ -389,8 +393,8 @@ void launch_norm_gpu(const double* x,
         exit(EXIT_FAILURE);
     }
  
-    CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
+    //CUDA_CHECK(cudaMemcpy(d_xx, x, n * sizeof(double), cudaMemcpyHostToDevice));
+    //CUDA_CHECK(cudaMemcpy(d_yy, y, n * sizeof(double), cudaMemcpyHostToDevice));
 
     norm_gpu<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
   
