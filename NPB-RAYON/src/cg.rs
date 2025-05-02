@@ -208,7 +208,7 @@ mod cg {
         let mut arow: Vec<i32> = alloc_arow();
         let mut acol: Vec<i32> = alloc_acol();
         let mut aelt: Vec<f64> = alloc_aelt();
-        let mut a: Vec<f64> = alloc_a();
+        let (mut a, mut d_a): Vec<f64> = alloc_a();
         let mut x: Vec<f64> = alloc_x();
         let mut z: Vec<f64> = alloc_z();
         let mut p: Vec<f64> = alloc_p();
@@ -278,6 +278,8 @@ mod cg {
 
         move_a_to_device(&colidx[..], &rowstr[..], &a[..]);
 
+        a = d_a;
+
         /*
         * -------------------------------------------------------------------
         * ---->
@@ -309,7 +311,7 @@ mod cg {
 
             norm_temp2 = vecvecmul(&z[..], &z[..]);
             //norm_temp2 = z.par_iter().map(|z| z * z).sum();
-            
+
             norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
 
             /* normalize z to obtain x */
@@ -965,15 +967,15 @@ mod cg {
     }
 
     #[kernelversion]
-    fn alloc_a() -> Vec<f64> { vec![0.0; NZ] }
+    fn alloc_a() -> (Vec<f64>,Vec<f64>) { (vec![0.0; NZ], nullptr) }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_a() -> Vec<f64> { vec![0.0; NZ] }
+    fn alloc_a() -> (Vec<f64>,Vec<f64>) { (vec![0.0; NZ], nullptr)}
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_a() -> Vec<f64> { 
+    fn alloc_a() -> (Vec<f64>,Vec<f64>) { 
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_a_gpu(&mut ptr, NZ as i32) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
-        vec![0.0; NZ] 
+        (vec![0.0; NZ], slice)
     }
 
     #[kernelversion]
@@ -985,7 +987,7 @@ mod cg {
         let mut ptr: *const i32 = std::ptr::null();
         unsafe { alloc_colidx_gpu(&mut ptr, NZ as i32) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
-        vec![0; NZ] 
+        slice // vec![0; NZ] 
     }
 
     #[kernelversion]
@@ -997,7 +999,7 @@ mod cg {
         let mut ptr: *const i32 = std::ptr::null();
         unsafe { alloc_rowstr_gpu(&mut ptr, NA + 1) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 1) as usize).to_vec() };
-        vec![0; (NA + 1) as usize] 
+        slice // vec![0; (NA + 1) as usize] 
     }
 
     #[kernelversion]
@@ -1009,7 +1011,7 @@ mod cg {
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_x_gpu(&mut ptr, NA + 2) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
-        vec![1.0; NA as usize + 2] 
+        slice // vec![1.0; NA as usize + 2] 
     }
 
     #[kernelversion]
@@ -1021,7 +1023,7 @@ mod cg {
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_z_gpu(&mut ptr, NA + 2) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
-        vec![0.0; NA as usize + 2] 
+        slice // vec![0.0; NA as usize + 2] 
     }
 
     #[kernelversion]
@@ -1033,7 +1035,7 @@ mod cg {
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_p_gpu(&mut ptr, NA + 2) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
-        vec![0.0; NA as usize + 2] 
+        slice // vec![0.0; NA as usize + 2] 
     }
 
     #[kernelversion]
@@ -1045,7 +1047,7 @@ mod cg {
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_q_gpu(&mut ptr, NA + 2) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
-        vec![0.0; NA as usize + 2] 
+        slice // vec![0.0; NA as usize + 2] 
     }
 
     #[kernelversion]
@@ -1057,7 +1059,7 @@ mod cg {
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_r_gpu(&mut ptr, NA + 2) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 2) as usize).to_vec() };
-        vec![0.0; NA as usize + 2] 
+        slice // vec![0.0; NA as usize + 2] 
     }
 
 

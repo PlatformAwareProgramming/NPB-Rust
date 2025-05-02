@@ -28,8 +28,8 @@ extern "C" {
         int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
 
         if(thread_id < n) {
-            q[thread_id] = 0;
-            z[thread_id] = 0;
+            q[thread_id] = 0.0;
+            z[thread_id] = 0.0;
             r[thread_id] = x[thread_id];
             p[thread_id] = r[thread_id];
         }
