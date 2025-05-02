@@ -23,11 +23,15 @@ mod cg {
     use std::ffi::c_double;
     use std::os::raw::c_int;
     unsafe extern "C" {
+        fn launch_init_x_gpu(x: *mut c_double, n: c_int);
+        fn launch_init_conj_grad_gpu(x: *mut c_double, q: *mut c_double, z: *mut c_double, r: *mut c_double, p: *mut c_double, n: c_int);
         fn dot_product_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
+        fn move_a_to_device_gpu (colidx: *const c_int, rowstr: *const c_int, a: *const c_double, nnz:c_int, num_rows: c_int);
         fn launch_csr_matvec_mul(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
         fn launch_scalarvecmul1_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
         fn launch_scalarvecmul2_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
         fn launch_norm_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
+        fn launch_update_x_gpu(norm_temp2:c_double, z: *const c_double, x: *mut c_double, n:c_int);
         fn alloc_vectors_gpu(m:i32, n: i32);
         fn alloc_colidx_gpu(out_ptr: *mut *const c_int, m:i32);
         fn alloc_rowstr_gpu(out_ptr: *mut *const c_int, m:i32);
@@ -272,6 +276,8 @@ mod cg {
                 }
             });
 
+        move_a_to_device(a, colidx, rowstr);
+
         /*
         * -------------------------------------------------------------------
         * ---->
@@ -310,7 +316,7 @@ mod cg {
         } /* end of do one iteration untimed */
 
         /* set starting vector to (1, 1, .... 1) */
-        x[0..NA as usize + 1].par_iter_mut().for_each(|x| *x = 1.0);
+        init_x(x);
 
         timers.stop(T_INIT);
 
@@ -359,7 +365,12 @@ mod cg {
             * so, first: (z.z)
             * --------------------------------------------------------------------
             */
-            (norm_temp1, norm_temp2) = (&mut x[..], &mut z)
+
+            norm_temp1 = vecvecmul(x, z);
+            norm_temp2 = vecvecmul(z, z);
+
+
+          /*   (norm_temp1, norm_temp2) = (&mut x[..], &mut z)
                 .into_par_iter()
                 .map(|(x, z)| (*x * *z, *z * *z))
                 .reduce(
@@ -370,6 +381,7 @@ mod cg {
                         (acc_1, acc_2)
                     },
                 );
+*/
 
             norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
 
@@ -380,9 +392,8 @@ mod cg {
             println!("   {:>5}       {:>20.14e}{:>20.13e}", it, rnorm, zeta);
 
             /* normalize z to obtain x */
-            z.par_iter()
-                .map(|z| z * norm_temp2)
-                .collect_into_vec(&mut x);
+            update_x(norm_temp2, z, x);
+
         } /* end of main iter inv pow meth */
 
         timers.stop(T_BENCH);
@@ -509,14 +520,7 @@ mod cg {
         let (mut d, mut rho, mut rho0, mut alpha, mut beta): (f64, f64, f64, f64, f64);
 
         /* initialize the CG algorithm */
-        (&mut q[..], &mut z[..], &mut r[..], &mut p[..], &x[..])
-            .into_par_iter()
-            .for_each(|(q, z, r, p, x)| {
-                *q = 0.0;
-                *z = 0.0;
-                *r = *x;
-                *p = *r;
-            });
+        init_conj_grad(q, z, r, p);
 
         /*
         * --------------------------------------------------------------------
@@ -1053,6 +1057,69 @@ mod cg {
     }
 
 
+    #[kernelversion]
+    fn init_x(x: &[f64]) {
+        x[0..NA as usize + 1].fill(1.0);
+    }
+    
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn init_x(x: &[f64]) {
+        x[0..NA as usize + 1].par_iter_mut().for_each(|x| *x = 1.0);
+    }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn init_x(x: &[f64]) {
+        unsafe { launch_init_x_gpu(x, NA as usize + 1) }
+    }
+
+
+    #[kernelversion]
+    fn init_conj_grad(q: &[f64], z: &[f64], r: &[f64], p: &[f64]) {
+        q.fill(0.0);
+        z.fill(0.0);
+        (&mut r[..])
+            .into_iter()
+            .zip(&mut p[..])
+            .zip(&x[..])
+            .for_each(|((r, p), x)| {
+                *r = *x;
+                *p = *r;
+            });
+    }
+
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn init_conj_grad(q: &[f64], z: &[f64], r: &[f64], p: &[f64]) {
+        (&mut q[..], &mut z[..], &mut r[..], &mut p[..], &x[..])
+            .into_par_iter()
+            .for_each(|(q, z, r, p, x)| {
+                *q = 0.0;
+                *z = 0.0;
+                *r = *x;
+                *p = *r;
+            });
+    }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn init_conj_grad(x: &mut [f64], q: &mut [f64], z: &mut [f64], r: &mut [f64], p: &mut [f64]) {
+
+        unsafe { 
+            launch_init_conj_grad_gpu(x, q, z, r, p,  (LASTCOL - FIRSTCOL + 1) as i32) 
+        }
+    }
+
+    #[kernelversion]
+    fn move_a_to_device(colidx: &[i32],  rowstr: &[i32], a: &[f64]) { }
+
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn move_a_to_device(colidx: &[i32],  rowstr: &[i32], a: &[f64]) { }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn move_a_to_device(colidx: &[i32], rowstr: &[i32], a: &[f64]) { 
+        let nnz = a.len() as i32;
+        let num_rows = rowstr.len() as i32;
+        unsafe { move_a_to_device_gpu (colidx, rowstr, a, nnz, num_rows) }
+    }
+
     // y = a * x (sequential)
     #[kernelversion]
     fn matvecmul(
@@ -1276,5 +1343,24 @@ mod cg {
         f64::sqrt(sum)
     }
 
+    #[kernelversion]
+    fn update_x(norm_temp2: i32, z: &[f64], x: &mut [f64]) -> f64 {
+        for j in 0..(LASTCOL - FIRSTCOL + 1) as usize {
+            x[j] = norm_temp2 * z[j];
+        }
+    }
 
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn update_x(norm_temp2: i32, z: &[f64], x: &mut [f64]) -> f64 {
+        z.par_iter()
+         .map(|z| z * norm_temp2)
+         .collect_into_vec(&mut x);
+    }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn update_x(norm_temp2: i32, z: &[f64], x: &mut [f64]) -> f64 {
+        { 
+            unsafe { launch_update_x_gpu(norm_temp2, z, x, (LASTCOL - FIRSTCOL + 1) as i32) }
+        }
+    }
 }

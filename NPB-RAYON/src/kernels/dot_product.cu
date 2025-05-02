@@ -14,6 +14,26 @@
 
 extern "C" {
 
+    __global__ void init_x_gpu(double* x, int n) {
+
+        int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
+
+        if(thread_id < n) {
+            x[thread_id] = 1.0;
+        }
+    }
+
+    __global__ void init_conj_grad_gpu(double* x, double* q, double* z, double* r, double* p, int n) {
+
+        int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
+
+        if(thread_id < n) {
+            q[thread_id] = 0;
+            z[thread_id] = 0;
+            r[thread_id] = x[thread_id];
+            p[thread_id] = r[thread_id];
+        }
+    }
 // Kernel CUDA para multiplicar os vetores
     __global__ void dot_product_kernel(const double* x, const double* y, double* partial_sum, int n) {
         __shared__ double share_data[256]; // Cache compartilhado para redução
@@ -104,6 +124,16 @@ extern "C" {
         }
     }
 
+    __global__ void update_x_gpu(double norm_temp2, double* z, double* x, int n) {
+
+        int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
+
+        if(thread_id < n) {
+            x[thread_id] = norm_temp2 * z[thread_id];
+        }
+    }
+
+
 int *d_colidx_;
 int *d_rowstr_;
 double *d_aa;
@@ -188,7 +218,40 @@ void free_vectors_gpu() {
     free(h_partial_sum);
 }
 
-int alloc = 0;
+void launch_init_x_gpu(double* x, int n)
+{
+    int blockSize = 256;
+    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+
+    if (blockSize & (blockSize - 1)) {
+        fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
+        exit(EXIT_FAILURE);
+    }
+ 
+    init_x_gpu<<<gridSize, blockSize>>>(x, n);
+  
+    CUDA_CHECK(cudaDeviceSynchronize());
+    CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
+
+}
+
+
+void launch_init_conj_grad_gpu(double* x, double* q, double* z, double* r, double* p, int n)
+{
+    int blockSize = 256;
+    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+
+    if (blockSize & (blockSize - 1)) {
+        fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
+        exit(EXIT_FAILURE);
+    }
+ 
+    init_conj_grad_gpu<<<gridSize, blockSize>>>(x, q, z, r, p, n);
+  
+    CUDA_CHECK(cudaDeviceSynchronize());
+    CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
+
+}
 
 // Função wrapper para ser chamada do Rust
 void dot_product_gpu(const double* x, 
@@ -218,6 +281,12 @@ void dot_product_gpu(const double* x,
     for (int i = 0; i < GridSize; i++) {
         *result += h_partial_sum[i];
     }
+}
+
+void move_a_to_device_gpu(const int* h_colidx, const int* h_rowstr, const double* h_a, int nnz, int num_rows) {
+    CUDA_CHECK(cudaMemcpy(d_aa, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_colidx_, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_rowstr_, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
 }
 
 void launch_csr_matvec_mul(
@@ -334,6 +403,22 @@ void launch_norm_gpu(const double* x,
     for (int i = 0; i < GridSize; i++) {
         *result += h_partial_sum[i];
     }
+}
+
+void launch_update_x_gpu(double norm_temp2, const double* z, double* x, int n)
+{
+    int blockSize = 256;
+    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+
+    if (blockSize & (blockSize - 1)) {
+        fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
+        exit(EXIT_FAILURE);
+    }
+ 
+    update_x_gpu<<<gridSize, blockSize>>>(norm_temp2, z, x, n);
+  
+    CUDA_CHECK(cudaDeviceSynchronize());
+    CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
 }
 
 }
