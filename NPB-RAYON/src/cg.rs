@@ -1069,7 +1069,7 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn init_x(x: &mut [f64]) {
-        unsafe { launch_init_x_gpu(x.as_mut_ptr(), NA as usize + 1) }
+        unsafe { launch_init_x_gpu(x.as_mut_ptr(), NA + 1) }
     }
 
 
