@@ -202,6 +202,8 @@ mod cg {
             ThreadPoolBuilder::new().build_global().unwrap();
         }
 
+        println!("STEP 1");
+
         let mut colidx_d: Vec<i32> = alloc_colidx_d();
         let mut colidx_h: Vec<i32> = alloc_colidx_h();
         let mut colidx: Vec<i32> = colidx_h;
@@ -220,6 +222,8 @@ mod cg {
         let mut p: Vec<f64> = alloc_p();
         let mut q: Vec<f64> = alloc_q();
         let mut r: Vec<f64> = alloc_r();
+
+        println!("STEP N");
 
         allocvectors(NZ as i32, (NA as usize + 2) as i32);
 
