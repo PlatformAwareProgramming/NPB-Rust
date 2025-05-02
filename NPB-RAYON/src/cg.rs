@@ -1007,19 +1007,25 @@ mod cg {
     fn alloc_colidx_d() -> Vec<i32> { 
         let mut ptr: *const i32 = std::ptr::null();
         unsafe { alloc_colidx_gpu(&mut ptr, NZ as i32) };
-        unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
+        unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() }
     }
 
     #[kernelversion]
-    fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    fn alloc_rowstr_h() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_rowstr() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    fn alloc_rowstr_h() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_rowstr() -> Vec<i32>  { 
+    fn alloc_rowstr_h() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+
+    #[kernelversion]
+    fn alloc_rowstr_d() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_rowstr_d() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_rowstr_d() -> Vec<i32>  { 
         let mut ptr: *const i32 = std::ptr::null();
         unsafe { alloc_rowstr_gpu(&mut ptr, NA + 1) };
-        let slice = unsafe { std::slice::from_raw_parts(ptr, (NA + 1) as usize).to_vec() };
-        slice // vec![0; (NA + 1) as usize] 
+        unsafe { std::slice::from_raw_parts(ptr, (NA + 1) as usize).to_vec() }
     }
 
     #[kernelversion]
