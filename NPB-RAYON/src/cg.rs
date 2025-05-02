@@ -980,7 +980,7 @@ mod cg {
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn alloc_a_d() -> Vec<f64> { vec![0.0; NZ] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_a_d() -> Vec<f64> { vec![0.0; NZ] }
+    fn alloc_a_d() -> Vec<f64> { 
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_a_gpu(&mut ptr, NZ as i32) };
         unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() }
