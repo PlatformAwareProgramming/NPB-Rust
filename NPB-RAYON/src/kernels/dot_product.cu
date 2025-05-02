@@ -124,7 +124,7 @@ extern "C" {
         }
     }
 
-    __global__ void update_x_gpu(double norm_temp2, double* z, double* x, int n) {
+    __global__ void update_x_gpu(double norm_temp2, const double* z, double* x, int n) {
 
         int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
 
