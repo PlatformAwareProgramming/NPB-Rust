@@ -972,9 +972,11 @@ mod cg {
     fn alloc_a() -> (Vec<f64>,Vec<f64>) { (vec![0.0; NZ], vec![0.0; 0])}
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_a() -> (Vec<f64>,Vec<f64>) { 
+        println!("----------");
         let mut ptr: *const f64 = std::ptr::null();
         unsafe { alloc_a_gpu(&mut ptr, NZ as i32) };
         let slice = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
+        println!("+++++++++");
         (vec![0.0; NZ], slice)
     }
 
