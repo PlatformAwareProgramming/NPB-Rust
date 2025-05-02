@@ -1157,7 +1157,7 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn move_a_to_device(colidx_h: &[i32],  rowstr_h: &[i32], a_h: &[f64], 
-                        colidx_d: &[i32],  rowstr_d: &[i32], a_d: &[f64]) {
+                        colidx_d: &mut [i32],  rowstr_d: &mut [i32], a_d: &mut [f64]) {
         let nnz = a.len() as i32;
         let num_rows = rowstr.len() as i32;
         unsafe { move_a_to_device_gpu (colidx.as_ptr(), rowstr.as_ptr(), a.as_ptr(), nnz, num_rows) }
