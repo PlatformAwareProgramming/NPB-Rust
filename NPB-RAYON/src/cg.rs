@@ -336,15 +336,10 @@ mod cg {
             */
 
             norm_temp2 = vecvecmul(&z[..], &z[..]);
-            //norm_temp2 = z.par_iter().map(|z| z * z).sum();
-
             norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
 
             /* normalize z to obtain x */
             update_x(norm_temp2, &z[..], &mut x);
-           // z.par_iter()
-           //     .map(|z| z * norm_temp2)
-           //     .collect_into_vec(&mut x);
         } /* end of do one iteration untimed */
 
         /* set starting vector to (1, 1, .... 1) */
@@ -400,20 +395,6 @@ mod cg {
 
             norm_temp1 = vecvecmul(&x[..], &z[..]);
             norm_temp2 = vecvecmul(&z[..], &z[..]);
-
-
-          /*   (norm_temp1, norm_temp2) = (&mut x[..], &mut z)
-                .into_par_iter()
-                .map(|(x, z)| (*x * *z, *z * *z))
-                .reduce(
-                    || (0.0, 0.0),
-                    |(mut acc_1, mut acc_2), (part_1, part_2)| {
-                        acc_1 += part_1;
-                        acc_2 += part_2;
-                        (acc_1, acc_2)
-                    },
-                );
-*/
 
             norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
 
