@@ -196,17 +196,28 @@ void alloc_vectors_gpu(int m, int n) {
 
 void free_vectors_gpu() {
 
+    printf("end 1\n");
     CUDA_CHECK(cudaFree(d_colidx));
+    printf("end 2\n");
     CUDA_CHECK(cudaFree(d_rowstr));
+    printf("end 3\n");
     CUDA_CHECK(cudaFree(d_a));
+    printf("end 4\n");
     CUDA_CHECK(cudaFree(d_x));
+    printf("end 5\n");
     CUDA_CHECK(cudaFree(d_z));
+    printf("end 6\n");
     CUDA_CHECK(cudaFree(d_p));
+    printf("end 7\n");
     CUDA_CHECK(cudaFree(d_q));
+    printf("end 8\n");
     CUDA_CHECK(cudaFree(d_r));
+    printf("end 9\n");
     CUDA_CHECK(cudaFree(d_partial_sum));
+    printf("end 10\n");
 
     free(h_partial_sum);
+    printf("end 11\n");
 }
 
 void launch_init_x_gpu(double* x, int n)
