@@ -6,7 +6,7 @@ fn main() {
 
 use platform_aware::{platformaware};
 
-#[platformaware(init_x, init_conj_grad, update_x, move_a_to_device, allocvectors, alloc_a_h, alloc_a_d, alloc_colidx, alloc_rowstr, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
+#[platformaware(init_x, init_conj_grad, update_x, move_a_to_device, allocvectors, alloc_a_h, alloc_a_d, alloc_colidx_h, alloc_colidx_d, alloc_rowstr_h, alloc_rowstr_d, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
 mod cg {
 
     use crate::common::print_results::*;
@@ -202,8 +202,12 @@ mod cg {
             ThreadPoolBuilder::new().build_global().unwrap();
         }
 
-        let mut colidx: Vec<i32> = alloc_colidx();
-        let mut rowstr: Vec<i32> = alloc_rowstr();
+        let mut colidx_d: Vec<i32> = alloc_colidx_d();
+        let mut colidx_h: Vec<i32> = alloc_colidx_h();
+        let mut colidx: Vec<i32> = colidx_h;
+        let mut rowstr_d: Vec<i32> = alloc_rowstr_d();
+        let mut rowstr_h: Vec<i32> = alloc_rowstr_h();
+        let mut rowstr: Vec<i32> = rowstr_h;
         let mut iv: Vec<i32> = alloc_iv();
         let mut arow: Vec<i32> = alloc_arow();
         let mut acol: Vec<i32> = alloc_acol();
@@ -278,9 +282,11 @@ mod cg {
                 }
             });
 
-        move_a_to_device(&colidx[..], &rowstr[..], &a[..]);
+        move_a_to_device(&colidx_h[..], &rowstr_h[..], &a_h[..], &mut colidx_d[..], &mut rowstr_d[..], &mut a_d[..]);
 
         a = a_d;
+        colidx = colidx_d;
+        rowstr = rowstr_d;
 
         /*
         * -------------------------------------------------------------------
@@ -987,15 +993,21 @@ mod cg {
     }
 
     #[kernelversion]
-    fn alloc_colidx() -> Vec<i32> { vec![0; NZ] }
+    fn alloc_colidx_h() -> Vec<i32> { vec![0; NZ] }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_colidx() -> Vec<i32> { vec![0; NZ] }
+    fn alloc_colidx_h() -> Vec<i32> { vec![0; NZ] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_colidx() -> Vec<i32> { 
+    fn alloc_colidx_h() -> Vec<i32> { vec![0; NZ] }
+
+    #[kernelversion]
+    fn alloc_colidx_d() -> Vec<i32> { vec![0; NZ] }
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn alloc_colidx_d() -> Vec<i32> { vec![0; NZ] }
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn alloc_colidx_d() -> Vec<i32> { 
         let mut ptr: *const i32 = std::ptr::null();
         unsafe { alloc_colidx_gpu(&mut ptr, NZ as i32) };
-        let slice = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
-        slice // vec![0; NZ] 
+        unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
     }
 
     #[kernelversion]
@@ -1122,13 +1134,24 @@ mod cg {
     }
 
     #[kernelversion]
-    fn move_a_to_device(colidx: &[i32],  rowstr: &[i32], a: &[f64]) { }
+    fn move_a_to_device(colidx_h: &[i32],  rowstr_h: &[i32], a_h: &[f64], 
+                        colidx_d: &mut [i32],  rowstr_d: &mut [i32], a_d: &mut [f64]) { 
+                            colidx_d.copy_from_slice(colidx_h);
+                            rowstr_d.copy_from_slice(rowstr_h);
+                            a_d.copy_from_slice(a_h);
+                        }
 
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn move_a_to_device(colidx: &[i32],  rowstr: &[i32], a: &[f64]) { }
+    fn move_a_to_device(colidx_h: &[i32],  rowstr_h: &[i32], a_h: &[f64], 
+                        colidx_d: &mut [i32],  rowstr_d: &mut [i32], a_d: &mut [f64]) { 
+                            colidx_d.copy_from_slice(colidx_h);
+                            rowstr_d.copy_from_slice(rowstr_h);
+                            a_d.copy_from_slice(a_h);
+                        }
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn move_a_to_device(colidx: &[i32], rowstr: &[i32], a: &[f64]) { 
+    fn move_a_to_device(colidx_h: &[i32],  rowstr_h: &[i32], a_h: &[f64], 
+                        colidx_d: &[i32],  rowstr_d: &[i32], a_d: &[f64]) {
         let nnz = a.len() as i32;
         let num_rows = rowstr.len() as i32;
         unsafe { move_a_to_device_gpu (colidx.as_ptr(), rowstr.as_ptr(), a.as_ptr(), nnz, num_rows) }
