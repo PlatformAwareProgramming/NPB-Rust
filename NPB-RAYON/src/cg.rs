@@ -392,7 +392,7 @@ mod cg {
             println!("   {:>5}       {:>20.14e}{:>20.13e}", it, rnorm, zeta);
 
             /* normalize z to obtain x */
-            update_x(norm_temp2, z, x);
+            update_x(norm_temp2, &z[..], &mut x[..]);
 
         } /* end of main iter inv pow meth */
 
@@ -520,7 +520,7 @@ mod cg {
         let (mut d, mut rho, mut rho0, mut alpha, mut beta): (f64, f64, f64, f64, f64);
 
         /* initialize the CG algorithm */
-        init_conj_grad(&mut q[..], &mut z[..], &mut r[..], &mut p[..]);
+        init_conj_grad(&mut x[..], &mut q[..], &mut z[..], &mut r[..], &mut p[..]);
 
         /*
         * --------------------------------------------------------------------
