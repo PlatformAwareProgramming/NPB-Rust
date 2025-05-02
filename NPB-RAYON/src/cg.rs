@@ -1352,9 +1352,12 @@ mod cg {
 
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn update_x(norm_temp2: f64, z: &[f64], x: &mut [f64]) {
-        z.par_iter()
-         .map(|z| z * norm_temp2)
-         .collect_into_vec(x);
+        for j in 0..(LASTCOL - FIRSTCOL + 1) as usize {
+            x[j] = norm_temp2 * z[j];
+        }
+//        z.par_iter()
+  //       .map(|z| z * norm_temp2)
+    //     .collect_into_vec(x);
     }
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
