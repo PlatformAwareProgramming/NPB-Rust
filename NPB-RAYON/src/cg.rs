@@ -189,6 +189,9 @@ mod cg {
 
     /* cg */
     pub fn main() {
+        
+        println!("STEP 0");
+
         if let Ok(ray_num_threads_str) = env::var("RAY_NUM_THREADS") {
             if let Ok(ray_num_threads) = ray_num_threads_str.parse::<usize>() {
                 ThreadPoolBuilder::new()
