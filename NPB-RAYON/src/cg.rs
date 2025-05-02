@@ -1030,9 +1030,15 @@ mod cg {
     fn alloc_colidx_d() -> Vec<i32> { vec![0; NZ] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_colidx_d() -> Vec<i32> { 
+        println!("alloc_colidx_d 1");
         let mut ptr: *const i32 = std::ptr::null();
+        println!("alloc_colidx_d 2");
         unsafe { alloc_colidx_gpu(&mut ptr, NZ as i32) };
-        unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() }
+        println!("alloc_colidx_d 3");
+        let r = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() }
+        println!("alloc_colidx_d 4");
+        r
+
     }
 
     #[kernelversion]
