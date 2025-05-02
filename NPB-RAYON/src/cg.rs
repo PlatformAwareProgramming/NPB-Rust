@@ -1261,7 +1261,6 @@ mod cg {
                 d * d
         })
         .sum();
-
         f64::sqrt(sum)
     }
 
