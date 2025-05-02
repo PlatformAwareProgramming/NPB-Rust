@@ -6,7 +6,28 @@ fn main() {
 
 use platform_aware::{platformaware};
 
-#[platformaware(init_x, init_conj_grad, update_x, move_a_to_device, allocvectors, alloc_a_h, alloc_a_d, alloc_colidx_h, alloc_colidx_d, alloc_rowstr_h, alloc_rowstr_d, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
+#[platformaware(init_x, 
+                init_conj_grad, 
+                update_x, 
+                move_a_to_device, 
+                allocvectors, 
+                alloc_a_h, 
+                alloc_a_d, 
+                alloc_colidx_h, 
+                alloc_colidx_d, 
+                alloc_rowstr_h, 
+                alloc_rowstr_d, 
+                alloc_x, 
+                alloc_p, 
+                alloc_q, 
+                alloc_r, 
+                alloc_z, 
+                freevectors, 
+                matvecmul, 
+                vecvecmul, 
+                scalarvecmul1, 
+                scalarvecmul2, 
+                norm)]
 mod cg {
 
     use crate::common::print_results::*;
@@ -190,8 +211,6 @@ mod cg {
     /* cg */
     pub fn main() {
 
-        println!("STEP 0");
-
         if let Ok(ray_num_threads_str) = env::var("RAY_NUM_THREADS") {
             if let Ok(ray_num_threads) = ray_num_threads_str.parse::<usize>() {
                 ThreadPoolBuilder::new()
@@ -205,46 +224,24 @@ mod cg {
             ThreadPoolBuilder::new().build_global().unwrap();
         }
 
-        println!("STEP 1");
-
         let mut colidx_d: Vec<i32> = alloc_colidx_d();
-        println!("STEP 12");
         let mut colidx_h: Vec<i32> = alloc_colidx_h();
-        println!("STEP 13");
         let mut colidx: Vec<i32> = colidx_h;
-        println!("STEP 14");
         let mut rowstr_d: Vec<i32> = alloc_rowstr_d();
-        println!("STEP 15");
         let mut rowstr_h: Vec<i32> = alloc_rowstr_h();
-        println!("STEP 16");
         let mut rowstr: Vec<i32> = rowstr_h;
-        println!("STEP 17");
         let mut iv: Vec<i32> = alloc_iv();
-        println!("STEP 18");
         let mut arow: Vec<i32> = alloc_arow();
-        println!("STEP 19");
         let mut acol: Vec<i32> = alloc_acol();
-        println!("STEP 1");
         let mut aelt: Vec<f64> = alloc_aelt();
-        println!("STEP 1");
         let mut a_h: Vec<f64> = alloc_a_h();
-        println!("STEP 1");
         let mut a_d: Vec<f64> = alloc_a_d();
-        println!("STEP 1");
-        let mut a = a_h;
-        println!("STEP 1");
+        let mut a: Vec<f64> = a_h;
         let mut x: Vec<f64> = alloc_x();
-        println!("STEP 1");
         let mut z: Vec<f64> = alloc_z();
-        println!("STEP 1");
         let mut p: Vec<f64> = alloc_p();
-        println!("STEP 1");
         let mut q: Vec<f64> = alloc_q();
-        println!("STEP 1");
         let mut r: Vec<f64> = alloc_r();
-        println!("STEP 1");
-
-        println!("STEP N");
 
         allocvectors(NZ as i32, (NA as usize + 2) as i32);
 
