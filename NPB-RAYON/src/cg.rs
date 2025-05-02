@@ -1014,7 +1014,7 @@ mod cg {
     fn alloc_a_d() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
         unsafe { alloc_a_gpu(&mut ptr, NZ as i32) };
-        unsafe { Vec::from_raw_parts(ptr, NZ, NZ) };
+        unsafe { Vec::from_raw_parts(ptr, NZ, NZ) }
     }
 
     #[kernelversion]
@@ -1032,7 +1032,7 @@ mod cg {
     fn alloc_colidx_d() -> Vec<i32> { 
         let mut ptr: *mut i32 = std::ptr::null_mut();
         unsafe { alloc_colidx_gpu(&mut ptr, NZ as i32) };
-        unsafe { Vec::from_raw_parts(ptr, NZ, NZ) };
+        unsafe { Vec::from_raw_parts(ptr, NZ, NZ) }
     }
 
     #[kernelversion]
@@ -1050,7 +1050,7 @@ mod cg {
     fn alloc_rowstr_d() -> Vec<i32>  { 
         let mut ptr: *mut i32 = std::ptr::null_mut();
         unsafe { alloc_rowstr_gpu(&mut ptr, NA + 1) };
-        unsafe { Vec::from_raw_parts(ptr, (NA + 1) as usize, (NA + 1) as usize) };
+        unsafe { Vec::from_raw_parts(ptr, (NA + 1) as usize, (NA + 1) as usize) }
     }
 
     #[kernelversion]
@@ -1061,7 +1061,7 @@ mod cg {
     fn alloc_x() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
         unsafe { alloc_x_gpu(&mut ptr, NA + 2) };
-        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) };
+        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) }
     }
 
     #[kernelversion]
@@ -1072,7 +1072,7 @@ mod cg {
     fn alloc_z() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
         unsafe { alloc_z_gpu(&mut ptr, NA + 2) };
-        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) };
+        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) }
     }
 
     #[kernelversion]
@@ -1083,7 +1083,7 @@ mod cg {
     fn alloc_p() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
         unsafe { alloc_p_gpu(&mut ptr, NA + 2) };
-        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) };
+        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) }
     }
 
     #[kernelversion]
@@ -1094,7 +1094,7 @@ mod cg {
     fn alloc_q() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
         unsafe { alloc_q_gpu(&mut ptr, NA + 2) };
-        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) };
+        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) }
     }
 
     #[kernelversion]
@@ -1105,7 +1105,7 @@ mod cg {
     fn alloc_r() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
         unsafe { alloc_r_gpu(&mut ptr, NA + 2) };
-        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) };
+        unsafe { Vec::from_raw_parts(ptr, (NA + 2) as usize, (NA + 2) as usize) }
     }
 
 
