@@ -276,7 +276,7 @@ mod cg {
                 }
             });
 
-        move_a_to_device(&mut a[..], &mut colidx[..], &mut rowstr[..]);
+        move_a_to_device(&colidx[..], &rowstr[..], &a[..]);
 
         /*
         * -------------------------------------------------------------------
@@ -316,7 +316,7 @@ mod cg {
         } /* end of do one iteration untimed */
 
         /* set starting vector to (1, 1, .... 1) */
-        init_x(x);
+        init_x(&mut x[..]);
 
         timers.stop(T_INIT);
 
@@ -366,8 +366,8 @@ mod cg {
             * --------------------------------------------------------------------
             */
 
-            norm_temp1 = vecvecmul(x, z);
-            norm_temp2 = vecvecmul(z, z);
+            norm_temp1 = vecvecmul(&x[..], &z[..]);
+            norm_temp2 = vecvecmul(&z[..], &z[..]);
 
 
           /*   (norm_temp1, norm_temp2) = (&mut x[..], &mut z)
@@ -520,7 +520,7 @@ mod cg {
         let (mut d, mut rho, mut rho0, mut alpha, mut beta): (f64, f64, f64, f64, f64);
 
         /* initialize the CG algorithm */
-        init_conj_grad(q, z, r, p);
+        init_conj_grad(&mut q[..], &mut z[..], &mut r[..], &mut p[..]);
 
         /*
         * --------------------------------------------------------------------
@@ -1058,12 +1058,12 @@ mod cg {
 
 
     #[kernelversion]
-    fn init_x(x: &[f64]) {
+    fn init_x(x: &mut [f64]) {
         x[0..NA as usize + 1].fill(1.0);
     }
     
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn init_x(x: &[f64]) {
+    fn init_x(x: &mut [f64]) {
         x[0..NA as usize + 1].par_iter_mut().for_each(|x| *x = 1.0);
     }
 
@@ -1074,7 +1074,7 @@ mod cg {
 
 
     #[kernelversion]
-    fn init_conj_grad(q: &[f64], z: &[f64], r: &[f64], p: &[f64]) {
+    fn init_conj_grad(x: &mut [f64], q: &mut [f64], z: &mut [f64], r: &mut [f64], p: &mut [f64]) {
         q.fill(0.0);
         z.fill(0.0);
         (&mut r[..])
@@ -1088,7 +1088,7 @@ mod cg {
     }
 
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn init_conj_grad(q: &[f64], z: &[f64], r: &[f64], p: &[f64]) {
+    fn init_conj_grad(x: &mut [f64], q: &mut [f64], z: &mut [f64], r: &mut [f64], p: &mut [f64]) {
         (&mut q[..], &mut z[..], &mut r[..], &mut p[..], &x[..])
             .into_par_iter()
             .for_each(|(q, z, r, p, x)| {
