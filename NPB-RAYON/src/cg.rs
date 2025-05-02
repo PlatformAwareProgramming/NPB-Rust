@@ -6,7 +6,7 @@ fn main() {
 
 use platform_aware::{platformaware};
 
-#[platformaware(allocvectors, alloc_a, alloc_colidx, alloc_rowstr, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
+#[platformaware(init_x, init_conj_grad, update_x, move_a_to_device, allocvectors, alloc_a, alloc_colidx, alloc_rowstr, alloc_x, alloc_p, alloc_q, alloc_r, alloc_z, freevectors, matvecmul, vecvecmul, scalarvecmul1, scalarvecmul2, norm)]
 mod cg {
 
     use crate::common::print_results::*;
