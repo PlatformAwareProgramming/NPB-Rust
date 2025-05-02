@@ -276,7 +276,7 @@ mod cg {
                 }
             });
 
-        move_a_to_device(a, colidx, rowstr);
+        move_a_to_device(&mut a[..], &mut colidx[..], &mut rowstr[..]);
 
         /*
         * -------------------------------------------------------------------
