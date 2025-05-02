@@ -208,7 +208,7 @@ mod cg {
         let mut arow: Vec<i32> = alloc_arow();
         let mut acol: Vec<i32> = alloc_acol();
         let mut aelt: Vec<f64> = alloc_aelt();
-        let (mut a, mut d_a): Vec<f64> = alloc_a();
+        let (mut a, mut d_a): (Vec<f64>,Vec<f64>) = alloc_a();
         let mut x: Vec<f64> = alloc_x();
         let mut z: Vec<f64> = alloc_z();
         let mut p: Vec<f64> = alloc_p();
