@@ -1035,7 +1035,7 @@ mod cg {
         println!("alloc_colidx_d 2");
         unsafe { alloc_colidx_gpu(&mut ptr, NZ as i32) };
         println!("alloc_colidx_d 3");
-        let r = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() }
+        let r = unsafe { std::slice::from_raw_parts(ptr, NZ).to_vec() };
         println!("alloc_colidx_d 4");
         r
 
