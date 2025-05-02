@@ -967,9 +967,9 @@ mod cg {
     }
 
     #[kernelversion]
-    fn alloc_a() -> (Vec<f64>,Vec<f64>) { (vec![0.0; NZ], vec![0.0; 0]) }
+    fn alloc_a() -> (Vec<f64>,Vec<f64>) { let a = vec![0.0; NZ]; (a, a) }
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_a() -> (Vec<f64>,Vec<f64>) { (vec![0.0; NZ], vec![0.0; 0])}
+    fn alloc_a() -> (Vec<f64>,Vec<f64>) { let a = vec![0.0; NZ]; (a, a) }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_a() -> (Vec<f64>,Vec<f64>) { 
         println!("----------");
