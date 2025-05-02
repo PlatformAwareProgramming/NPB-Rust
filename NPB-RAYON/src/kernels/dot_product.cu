@@ -288,9 +288,9 @@ void dot_product_gpu(const double* d_xx,
 }
 
 void move_a_to_device_gpu(const int* h_colidx, const int* h_rowstr, const double* h_a, int nnz, int num_rows) {
-    CUDA_CHECK(cudaMemcpy(d_aa, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_colidx_, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_rowstr_, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_colidx, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_rowstr, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
 }
 
 void launch_csr_matvec_mul(
