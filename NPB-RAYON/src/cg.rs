@@ -34,13 +34,13 @@ mod cg {
         fn launch_update_x_gpu(norm_temp2:c_double, z: *const c_double, x: *mut c_double, n:c_int);
         fn alloc_vectors_gpu(m:i32, n: i32);
         fn alloc_colidx_gpu(out_ptr: *mut *mut c_int, m:i32);
-        fn alloc_rowstr_gpu(out_ptr: *mut *const c_int, m:i32);
-        fn alloc_a_gpu(out_ptr: *mut *const c_double, m:i32);
-        fn alloc_x_gpu(out_ptr: *mut *const c_double, m:i32);
-        fn alloc_p_gpu(out_ptr: *mut *const c_double, m:i32);
-        fn alloc_q_gpu(out_ptr: *mut *const c_double, m:i32);
-        fn alloc_r_gpu(out_ptr: *mut *const c_double, m:i32);
-        fn alloc_z_gpu(out_ptr: *mut *const c_double, m:i32);
+        fn alloc_rowstr_gpu(out_ptr: *mut *mut c_int, m:i32);
+        fn alloc_a_gpu(out_ptr: *mut *mut c_double, m:i32);
+        fn alloc_x_gpu(out_ptr: *mut *mut c_double, m:i32);
+        fn alloc_p_gpu(out_ptr: *mut *mut c_double, m:i32);
+        fn alloc_q_gpu(out_ptr: *mut *mut c_double, m:i32);
+        fn alloc_r_gpu(out_ptr: *mut *mut c_double, m:i32);
+        fn alloc_z_gpu(out_ptr: *mut *mut c_double, m:i32);
         fn free_vectors_gpu();
     }
 
