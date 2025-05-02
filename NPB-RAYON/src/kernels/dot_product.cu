@@ -250,7 +250,7 @@ void launch_vecvecmul_gpu(const double* d_xx,
                           int n) {
 
     int blockSize = 256;
-    int GridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
     double *d_partial_sum, *h_partial_sum;
 
     if (blockSize & (blockSize - 1)) {
@@ -261,15 +261,15 @@ void launch_vecvecmul_gpu(const double* d_xx,
     h_partial_sum = (double*) malloc(gridSize * sizeof(double));
     CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));
  
-    vecvecmul_gpu<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
+    vecvecmul_gpu<<<gridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
   
     CUDA_CHECK(cudaDeviceSynchronize());
     CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
 
-    CUDA_CHECK(cudaMemcpy(h_partial_sum, d_partial_sum, GridSize * sizeof(double), cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(h_partial_sum, d_partial_sum, gridSize * sizeof(double), cudaMemcpyDeviceToHost));
  
     *result = 0.0;
-    for (int i = 0; i < GridSize; i++) {
+    for (int i = 0; i < gridSize; i++) {
         *result += h_partial_sum[i];
     }
 
@@ -352,26 +352,26 @@ void launch_norm_gpu(const double* d_xx,
                      int n) {
 
     int blockSize = 256;
-    int GridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
     double *d_partial_sum, *h_partial_sum;
 
     if (blockSize & (blockSize - 1)) {
         fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
         exit(EXIT_FAILURE);
     }
-    
+
     h_partial_sum = (double*) malloc(gridSize * sizeof(double));
     CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));
  
-    norm_gpu<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
+    norm_gpu<<<gridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
   
     CUDA_CHECK(cudaDeviceSynchronize());
     CUDA_CHECK(cudaGetLastError()); // Verifica erros no lançamento do kernel
 
-    CUDA_CHECK(cudaMemcpy(h_partial_sum, d_partial_sum, GridSize * sizeof(double), cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(h_partial_sum, d_partial_sum, gridSize * sizeof(double), cudaMemcpyDeviceToHost));
  
     *result = 0.0;
-    for (int i = 0; i < GridSize; i++) {
+    for (int i = 0; i < gridSize; i++) {
         *result += h_partial_sum[i];
     }
 
