@@ -189,9 +189,9 @@ void alloc_vectors_gpu(int m, int n) {
     int blockSize = 256;
     int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
 
-    CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));
+  //  CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));
 
-    h_partial_sum = (double*) malloc(gridSize * sizeof(double));
+  //  h_partial_sum = (double*) malloc(gridSize * sizeof(double));
 }
 
 void free_vectors_gpu() {
@@ -204,9 +204,9 @@ void free_vectors_gpu() {
     CUDA_CHECK(cudaFree(d_p));
     CUDA_CHECK(cudaFree(d_q));
     CUDA_CHECK(cudaFree(d_r));
-    CUDA_CHECK(cudaFree(d_partial_sum));
+  //  CUDA_CHECK(cudaFree(d_partial_sum));
 
-    free(h_partial_sum);
+   // free(h_partial_sum);
 }
 
 void launch_init_x_gpu(double* x, int n)
@@ -257,6 +257,9 @@ void launch_vecvecmul_gpu(const double* d_xx,
         fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
         exit(EXIT_FAILURE);
     }
+
+    h_partial_sum = (double*) malloc(gridSize * sizeof(double));
+    CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));
  
     vecvecmul_gpu<<<GridSize, blockSize>>>(d_xx, d_yy, d_partial_sum, n);
   
@@ -269,6 +272,9 @@ void launch_vecvecmul_gpu(const double* d_xx,
     for (int i = 0; i < GridSize; i++) {
         *result += h_partial_sum[i];
     }
+
+    CUDA_CHECK(cudaFree(d_partial_sum));
+    free(h_partial_sum);
 }
 
 void move_a_to_device_gpu(const int* h_colidx, const int* h_rowstr, const double* h_a, int nnz, int num_rows) {

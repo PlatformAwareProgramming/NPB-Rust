@@ -1295,13 +1295,8 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn vecvecmul(x: &[f64], y: &[f64]) -> f64 {
-
-        let mut result: f64 = 0.0;
-    
-        unsafe {
-            launch_vecvecmul_gpu(x.as_ptr(), y.as_ptr(), &mut result as *mut f64, (LASTCOL - FIRSTCOL + 1) as i32);
-        }
-    
+        let mut result: f64 = 0.0;    
+        unsafe { launch_vecvecmul_gpu(x.as_ptr(), y.as_ptr(), &mut result as *mut f64, (LASTCOL - FIRSTCOL + 1) as i32); }
         result    
     }
 
@@ -1329,9 +1324,7 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn scalarvecmul2(alpha:f64, x: &[f64], y: &mut [f64]) {
-        unsafe {
-            launch_scalarvecmul2_gpu(alpha, x.as_ptr(), y.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32);
-        }
+        unsafe { launch_scalarvecmul2_gpu(alpha, x.as_ptr(), y.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32); }
     }
             
             
@@ -1358,10 +1351,7 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn scalarvecmul1(alpha:f64, x: &[f64], y: &mut [f64]) {
-        unsafe {
-            launch_scalarvecmul1_gpu(alpha, x.as_ptr(), y.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32);
-        }
-
+        unsafe { launch_scalarvecmul1_gpu(alpha, x.as_ptr(), y.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32); }
     }
 
     #[kernelversion]
@@ -1374,7 +1364,6 @@ mod cg {
                 d * d
         })
         .sum();
-
         f64::sqrt(sum)
     }
 
@@ -1393,13 +1382,8 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn norm(x: &[f64], y: &[f64]) -> f64 {
-
-        let mut sum: f64 = 0.0;
-    
-        unsafe {
-            launch_norm_gpu(x.as_ptr(), y.as_ptr(), &mut sum as *mut f64, (LASTCOL - FIRSTCOL + 1) as i32);
-        }
-    
+        let mut sum: f64 = 0.0;    
+        unsafe { launch_norm_gpu(x.as_ptr(), y.as_ptr(), &mut sum as *mut f64, (LASTCOL - FIRSTCOL + 1) as i32); }    
         f64::sqrt(sum)
     }
 
@@ -1412,9 +1396,6 @@ mod cg {
 
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn update_x(norm_temp2: f64, z: &[f64], x: &mut Vec<f64>) {
-      //  for j in 0..(LASTCOL - FIRSTCOL + 1) as usize {
-      //      x[j] = norm_temp2 * z[j];
-      //  }
         z.par_iter()
          .map(|z| z * norm_temp2)
          .collect_into_vec(x);
@@ -1422,8 +1403,6 @@ mod cg {
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn update_x(norm_temp2: f64, z: &[f64], x: &mut Vec<f64>) {
-        { 
-            unsafe { launch_update_x_gpu(norm_temp2, z.as_ptr(), x.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32) }
-        }
+        { unsafe { launch_update_x_gpu(norm_temp2, z.as_ptr(), x.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32) } }
     }
 }
