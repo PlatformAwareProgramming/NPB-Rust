@@ -38,7 +38,7 @@ fn main() {
 
     // Informa ao Cargo onde encontrar a libcudart.so
     // Use 'native=' para indicar que é um caminho do sistema
-    println!("cargo:rustc-link-search=native=/usr/local/cuda/lib64");
+    println!("cargo:rustc-link-search=native=/usr/local/cuda-12.9/targets/x86_64-linux/lib");
     // --------------------------------
 
     // Opcional: Informar ao Cargo para recompilar se os arquivos C ou o Makefile mudarem

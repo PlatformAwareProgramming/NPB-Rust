@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#define BLOCK_SIZE 4
+
 #define CUDA_CHECK(call) \
     do { \
         cudaError_t err = call; \
@@ -36,7 +38,7 @@ extern "C" {
     }
 // Kernel CUDA para multiplicar os vetores
     __global__ void vecvecmul_gpu(const double* x, const double* y, double* partial_sum, int n) {
-        __shared__ double share_data[256]; // Cache compartilhado para redução
+        __shared__ double share_data[BLOCK_SIZE]; // Cache compartilhado para redução
         int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
         int local_id = threadIdx.x;
 
@@ -99,7 +101,7 @@ extern "C" {
 
     __global__ void norm_gpu(const double* x, const double* y, double* partial_sum, int n) {
 
-        __shared__ double share_data[256]; // Cache compartilhado para redução
+        __shared__ double share_data[BLOCK_SIZE]; // Cache compartilhado para redução
         int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
         int local_id = threadIdx.x;
 
@@ -197,7 +199,7 @@ void free_vectors_gpu() {
 
 void launch_init_x_gpu(double* x, int n)
 {
-    int blockSize = 256;
+    int blockSize = BLOCK_SIZE;
     int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
 
     if (blockSize & (blockSize - 1)) {
@@ -215,7 +217,7 @@ void launch_init_x_gpu(double* x, int n)
 
 void launch_init_conj_grad_gpu(double* x, double* q, double* z, double* r, double* p, int n)
 {
-    int blockSize = 256;
+    int blockSize = BLOCK_SIZE;
     int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
 
     if (blockSize & (blockSize - 1)) {
@@ -236,7 +238,7 @@ void launch_vecvecmul_gpu(const double* d_xx,
                           double* result, 
                           int n) {
 
-    int blockSize = 256;
+    int blockSize = BLOCK_SIZE;
     int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
     double *d_partial_sum, *h_partial_sum;
 
@@ -281,7 +283,7 @@ void launch_matvecmul_gpu(
     int x_len
 ) {
     // Configuração do kernel
-    int blockSize = 256;
+    int blockSize = BLOCK_SIZE;
     int gridSize = (num_rows + blockSize - 1) / blockSize;
 
     matvecmul_gpu<<<gridSize, blockSize>>>(
@@ -299,7 +301,7 @@ void launch_matvecmul_gpu(
     double* d_yy, 
     int n) {
 
-        int blockSize = 256;
+        int blockSize = BLOCK_SIZE;
         int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
     
         if (blockSize & (blockSize - 1)) {
@@ -319,7 +321,7 @@ void launch_matvecmul_gpu(
     double* d_yy, 
     int n) {
 
-        int blockSize = 256;
+        int blockSize = BLOCK_SIZE;
         int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
     
         if (blockSize & (blockSize - 1)) {
@@ -338,7 +340,7 @@ void launch_norm_gpu(const double* d_xx,
                      double* result, 
                      int n) {
 
-    int blockSize = 256;
+    int blockSize = BLOCK_SIZE;
     int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
     double *d_partial_sum, *h_partial_sum;
 
@@ -368,7 +370,7 @@ void launch_norm_gpu(const double* d_xx,
 
 void launch_update_x_gpu(double norm_temp2, const double* z, double* x, int n)
 {
-    int blockSize = 256;
+    int blockSize = BLOCK_SIZE;
     int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
 
     if (blockSize & (blockSize - 1)) {
