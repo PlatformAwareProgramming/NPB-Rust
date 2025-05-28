@@ -43,14 +43,11 @@ mod cg {
     use std::ffi::c_double;
     use std::os::raw::c_int;
     unsafe extern "C" {
+        
+        // auxiliary kernels
         fn launch_init_x_gpu(x: *mut c_double, n: c_int);
         fn launch_init_conj_grad_gpu(x: *mut c_double, q: *mut c_double, z: *mut c_double, r: *mut c_double, p: *mut c_double, n: c_int);
-        fn launch_vecvecmul_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
         fn move_a_to_device_gpu (colidx: *const c_int, rowstr: *const c_int, a: *const c_double, nnz: c_int, num_rows: c_int);
-        fn launch_matvecmul_gpu(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
-        fn launch_scalarvecmul1_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
-        fn launch_scalarvecmul2_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
-        fn launch_norm_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
         fn launch_update_x_gpu(norm_temp2:c_double, z: *const c_double, x: *mut c_double, n:c_int);
         fn alloc_colidx_gpu(out_ptr: *mut *mut c_int, m:i32);
         fn alloc_rowstr_gpu(out_ptr: *mut *mut c_int, m:i32);
@@ -61,6 +58,13 @@ mod cg {
         fn alloc_r_gpu(out_ptr: *mut *mut c_double, m:i32);
         fn alloc_z_gpu(out_ptr: *mut *mut c_double, m:i32);
         fn free_vectors_gpu();
+
+        // computation kernels
+        fn launch_vecvecmul_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
+        fn launch_matvecmul_gpu(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
+        fn launch_scalarvecmul1_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
+        fn launch_scalarvecmul2_gpu(alpha:f64, x: *const f64, y: *mut f64, size: i32);
+        fn launch_norm_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
     }
 
     #[cfg(class = "S")]
@@ -627,7 +631,7 @@ mod cg {
         * ---------------------------------------------------------------------
         */
         timers.start(T_MATVECMUL);
-        matvecmul(colidx,rowstr, a, z, r);
+        matvecmul(colidx, rowstr, a, z, r);
         timers.stop(T_MATVECMUL);
 
         /*

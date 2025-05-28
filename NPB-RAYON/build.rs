@@ -25,7 +25,12 @@ fn main() {
     // Informa ao Cargo para linkar a biblioteca C
     // O nome da biblioteca deve ser o nome do arquivo sem o prefixo 'lib' e a extensão (.so)
     // Por exemplo, para libdot_product.so, o nome é dot_product
-    println!("cargo:rustc-link-lib=dot_product");
+    println!("cargo:rustc-link-lib=matvecmul");
+    println!("cargo:rustc-link-lib=vecvecmul");
+    println!("cargo:rustc-link-lib=scalarvecmul1");
+    println!("cargo:rustc-link-lib=scalarvecmul2");
+    println!("cargo:rustc-link-lib=vectors");
+    println!("cargo:rustc-link-lib=norm");
 
     // Informa ao Cargo onde encontrar a biblioteca para linkar
     // Este é o diretório onde o Makefile gera a libdot_product.so
@@ -42,7 +47,12 @@ fn main() {
     // --------------------------------
 
     // Opcional: Informar ao Cargo para recompilar se os arquivos C ou o Makefile mudarem
-    println!("cargo:rerun-if-changed={}/dot_product.cu", kernel_dir);
-    println!("cargo:rerun-if-changed={}/dot_product.h", kernel_dir);
+    println!("cargo:rerun-if-changed={}/cgkernels.h", kernel_dir);
+    println!("cargo:rerun-if-changed={}/matvecmul/matvecmul.cu", kernel_dir);
+    println!("cargo:rerun-if-changed={}/vecvecmul/vecvecmul.cu", kernel_dir);
+    println!("cargo:rerun-if-changed={}/norm/norm.cu", kernel_dir);
+    println!("cargo:rerun-if-changed={}/scalarvecmul1/scalarvecmul1.cu", kernel_dir);
+    println!("cargo:rerun-if-changed={}/scalarvecmul2/scalarvecmul2.cu", kernel_dir);
+    println!("cargo:rerun-if-changed={}/vectors/vectors.cu", kernel_dir);
     println!("cargo:rerun-if-changed={}/Makefile", kernel_dir);
 }
