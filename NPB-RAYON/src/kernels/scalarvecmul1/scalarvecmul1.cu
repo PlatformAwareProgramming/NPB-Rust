@@ -1,5 +1,6 @@
 #include "../cgkernels.h"
 
+#define BLOCK_SIZE 4
 
 extern "C" {
 

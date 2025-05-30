@@ -1,6 +1,8 @@
 // dot_product.cu
 #include "../cgkernels.h"
 
+#define BLOCK_SIZE 4
+
 extern "C" {
 
 // Kernel CUDA para multiplicar os vetores

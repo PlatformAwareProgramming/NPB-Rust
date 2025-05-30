@@ -1,5 +1,7 @@
 #include "../cgkernels.h"
 
+#define BLOCK_SIZE 4
+
 extern "C" {
 
     __global__ void init_x_gpu(double* x, int n) {

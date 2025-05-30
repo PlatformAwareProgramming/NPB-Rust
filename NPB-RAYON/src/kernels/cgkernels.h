@@ -11,7 +11,6 @@
 extern "C" {
 #endif
 
-#define BLOCK_SIZE 4
 
 #define CUDA_CHECK(call) \
     do { \
