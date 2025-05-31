@@ -40,7 +40,7 @@ void launch_vecvecmul_gpu(const double* d_xx,
     double *d_partial_sum, *h_partial_sum;
 
     if (blockSize & (blockSize - 1)) {
-        fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
+        fprintf(stderr, "Erro (vecvecmul): o número de threads por bloco deve ser uma potência de 2.\n");
         exit(EXIT_FAILURE);
     }
 

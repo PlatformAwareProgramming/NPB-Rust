@@ -6,7 +6,7 @@
 extern "C" {
 
 
- __global__ void matvecmul_MX570A(
+ __global__ void matvecmul_cuda(
     const double* __restrict__ a,
     const int* __restrict__ colidx,
     const int* __restrict__ rowstr,
@@ -55,7 +55,7 @@ extern "C" {
 }
 */
 
-void launch_matvecmul_MX570A(
+void launch_matvecmul_cuda(
     const double* d_aa,
     const int* d_colidx,
     const int* d_rowstr,
@@ -71,7 +71,7 @@ void launch_matvecmul_MX570A(
 
   //  cudaOccupancyMaxPotentialBlockSize( &gridSize, &blockSize, matvecmul_MX570A, 0, 0); 
 
-    matvecmul_MX570A<<<gridSize, blockSize>>>(
+    matvecmul_cuda<<<gridSize, blockSize>>>(
         d_aa, d_colidx, d_rowstr, d_xx, d_yy, num_rows
     );
 

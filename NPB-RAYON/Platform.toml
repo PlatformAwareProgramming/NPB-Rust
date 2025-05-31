@@ -5,8 +5,9 @@ acc_count = 1
 acc_backend = ["CUDA4","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_11_0"]
 acc_architecture = "Maxwell"
 # acc_model = "NVidiaRTX4000Ada"
-# acc_model = "NVidiaMTX570A"
-acc_model = "NVidiaA100"
+#acc_model = "NVidiaMTX570A1"
+#acc_model = "NVidiaA100"
+acc_model = "NvidiaGeForce940MX"
 acc_cpu_count = 1
 acc_processor = "GM108M"
 acc_memory_size = 4
@@ -14,7 +15,7 @@ acc_tdp = 23
 acc_type = "GPU"
 
 [processor]
-cpu_core_count = 8
+cpu_core_count = 12
 cpu_count = 1
 cpu_core_threads_count = 2
 cpu_simd = ["AVX2"]

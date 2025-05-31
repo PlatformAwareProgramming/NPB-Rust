@@ -1,7 +1,7 @@
 # Caminhos para os arquivos
-CUDA_SRC = scalarvecmul2.cu
-CUDA_OBJ = scalarvecmul2.o
-CUDA_LIB = libscalarvecmul2.so
+CUDA_SRC = matvecmul.cu 
+CUDA_OBJ = matvecmul0.o
+CUDA_LIB = libmatvecmul0.so
 
 # Compilador CUDA
 NVCC = nvcc

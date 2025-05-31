@@ -22,10 +22,8 @@ __global__ void scalarvecmul2_gpu(double alpha, const double* x, double* y, int 
     double* d_yy, 
     int n) {
 
-        int blockSize /*= BLOCK_SIZE*/;
-        int gridSize /*= (num_rows + blockSize - 1) / blockSize */;
-
-        cudaOccupancyMaxPotentialBlockSize( &gridSize, &blockSize, scalarvecmul2_gpu, 0, 0); 
+        int blockSize = BLOCK_SIZE;
+        int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
     
         if (blockSize & (blockSize - 1)) {
             fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");

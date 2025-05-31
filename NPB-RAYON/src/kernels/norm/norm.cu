@@ -39,13 +39,13 @@ void launch_norm_gpu(const double* d_xx,
 
     int blockSize = BLOCK_SIZE;
     int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
-    
-    double *d_partial_sum, *h_partial_sum;
 
     if (blockSize & (blockSize - 1)) {
-        fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
+        fprintf(stderr, "Erro (norm): o número de threads por bloco deve ser uma potência de 2.\n");
         exit(EXIT_FAILURE);
     }
+    
+    double *d_partial_sum, *h_partial_sum;
 
     h_partial_sum = (double*) malloc(gridSize * sizeof(double));
     CUDA_CHECK(cudaMalloc((void**)&d_partial_sum, gridSize * sizeof(double)));

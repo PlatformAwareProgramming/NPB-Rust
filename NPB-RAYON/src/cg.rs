@@ -64,6 +64,7 @@ mod cg {
 
         // computation kernels
         fn launch_vecvecmul_gpu(x: *const c_double, y: *const c_double, result: *mut c_double, n: c_int);
+        fn launch_matvecmul_cuda(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
         fn launch_matvecmul_MX570A(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
         fn launch_matvecmul_RTX4000Ada(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
         fn launch_matvecmul_A100(h_a: *const f64, h_colidx: *const i32, h_rowstr: *const i32, h_x: *const f64, h_y: *mut f64, nnz: i32, num_rows: i32, x_len: i32);
@@ -1212,6 +1213,32 @@ mod cg {
             });
         
     }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+    fn matvecmul(
+        colidx: &[i32],
+        rowstr: &[i32], 
+        a: &[f64],
+        x: &[f64],
+        y: &mut[f64],
+    ) {
+        let nnz = a.len() as i32;
+        let num_rows = y.len() as i32;
+        let x_len = x.len() as i32;
+        unsafe {
+            launch_matvecmul_cuda(
+                a.as_ptr(),
+                colidx.as_ptr(),
+                rowstr.as_ptr(),
+                x.as_ptr(),
+                y.as_mut_ptr(),
+                nnz,
+                num_rows,
+                x_len,
+            );
+        }
+    }
+
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, acc_model=NVidiaMTX570A)]
     fn matvecmul(

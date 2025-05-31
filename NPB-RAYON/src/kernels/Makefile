@@ -1,5 +1,5 @@
 # Lista de subdiretórios, cada um com seu próprio Makefile
-DIRS = matvecmul_1 matvecmul_2 matvecmul_3 vecvecmul scalarvecmul1 scalarvecmul2 norm vectors
+DIRS = matvecmul_0 matvecmul_1 matvecmul_2 matvecmul_3 vecvecmul scalarvecmul1 scalarvecmul2 norm vectors
 
 # Regra padrão: compilar todos os programas
 all:

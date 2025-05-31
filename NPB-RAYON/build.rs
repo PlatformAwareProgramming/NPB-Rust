@@ -25,6 +25,7 @@ fn main() {
     // Informa ao Cargo para linkar a biblioteca C
     // O nome da biblioteca deve ser o nome do arquivo sem o prefixo 'lib' e a extensão (.so)
     // Por exemplo, para libdot_product.so, o nome é dot_product
+    println!("cargo:rustc-link-lib=matvecmul0");
     println!("cargo:rustc-link-lib=matvecmul1");
     println!("cargo:rustc-link-lib=matvecmul2");
     println!("cargo:rustc-link-lib=matvecmul3");
@@ -50,6 +51,8 @@ fn main() {
 
     // Opcional: Informar ao Cargo para recompilar se os arquivos C ou o Makefile mudarem
     println!("cargo:rerun-if-changed={}/cgkernels.h", kernel_dir);
+    println!("cargo:rerun-if-changed={}/matvecmul_0/Makefile", kernel_dir);
+    println!("cargo:rerun-if-changed={}/matvecmul_0/matvecmul.cu", kernel_dir);
     println!("cargo:rerun-if-changed={}/matvecmul_1/Makefile", kernel_dir);
     println!("cargo:rerun-if-changed={}/matvecmul_1/matvecmul.cu", kernel_dir);
     println!("cargo:rerun-if-changed={}/matvecmul_2/Makefile", kernel_dir);
