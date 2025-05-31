@@ -37,10 +37,8 @@ void launch_norm_gpu(const double* d_xx,
                      double* result, 
                      int n) {
 
-    int blockSize /*= BLOCK_SIZE*/;
-    int gridSize /*= (num_rows + blockSize - 1) / blockSize */;
-
-    cudaOccupancyMaxPotentialBlockSize( &gridSize, &blockSize, norm_gpu, 0, 0); 
+    int blockSize = BLOCK_SIZE;
+    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
     
     double *d_partial_sum, *h_partial_sum;
 
