@@ -9,7 +9,7 @@ CC = gcc
 
 # Flags de compilação
 CUDA_FLAGS = -arch=sm_87 --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets
-CC_FLAGS = -shared -lcudart
+CC_FLAGS = -shared -lcudart -L$(CUDA_LIBDIR)
 
 # Criação da biblioteca compartilhada a partir do objeto compilado
 $(CUDA_LIB): $(CUDA_OBJ)
