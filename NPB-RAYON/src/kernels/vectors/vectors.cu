@@ -97,8 +97,10 @@ void free_vectors_gpu() {
 
 void launch_init_x_gpu(double* x, int n)
 {
-    int blockSize = BLOCK_SIZE;
-    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+    int blockSize /*= BLOCK_SIZE*/;
+    int gridSize /*= (num_rows + blockSize - 1) / blockSize */;
+
+    cudaOccupancyMaxPotentialBlockSize( &gridSize, &blockSize, init_x_gpu, 0, 0); 
 
     if (blockSize & (blockSize - 1)) {
         fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
@@ -115,8 +117,10 @@ void launch_init_x_gpu(double* x, int n)
 
 void launch_init_conj_grad_gpu(double* x, double* q, double* z, double* r, double* p, int n)
 {
-    int blockSize = BLOCK_SIZE;
-    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+    int blockSize /*= BLOCK_SIZE*/;
+    int gridSize /*= (num_rows + blockSize - 1) / blockSize */;
+
+    cudaOccupancyMaxPotentialBlockSize( &gridSize, &blockSize, init_conj_grad_gpu, 0, 0); 
 
     if (blockSize & (blockSize - 1)) {
         fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
@@ -139,8 +143,10 @@ void move_a_to_device_gpu(const int* h_colidx, const int* h_rowstr, const double
 
 void launch_update_x_gpu(double norm_temp2, const double* z, double* x, int n)
 {
-    int blockSize = BLOCK_SIZE;
-    int gridSize = (n + blockSize - 1) / blockSize; // Ajusta o número de blocos dinamicamente
+    int blockSize /*= BLOCK_SIZE*/;
+    int gridSize /*= (num_rows + blockSize - 1) / blockSize */;
+
+    cudaOccupancyMaxPotentialBlockSize( &gridSize, &blockSize, update_x_gpu, 0, 0); 
 
     if (blockSize & (blockSize - 1)) {
         fprintf(stderr, "Erro: o número de threads por bloco deve ser uma potência de 2.\n");
