@@ -7,32 +7,6 @@ extern "C" {
 
 
  __global__ void matvecmul_cuda(
-    const double* __restrict__ a,
-    const int* __restrict__ colidx,
-    const int* __restrict__ rowstr,
-    const double* __restrict__ x,
-    double* __restrict__ y,
-    int num_rows
-) {
-    int row = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (row < num_rows) {
-        double sum = 0.0;
-        int start = rowstr[row];
-        int end = rowstr[row + 1];
-
-        // Prefetch x[] values to avoid repeated global memory accesses
-        #pragma unroll 4
-        for (int i = start; i < end; ++i) {
-            sum += a[i] * __ldg(&x[colidx[i]]);
-        }
-
-        y[row] = sum;
-    }
-}
-
-
-/*__global__ void matvecmul_gpu(
     const double* a,
     const int* colidx,
     const int* rowstr,
@@ -53,7 +27,7 @@ extern "C" {
         y[row] = sum;
     }
 }
-*/
+
 
 void launch_matvecmul_cuda(
     const double* d_aa,
