@@ -10,11 +10,11 @@ use platform_aware::{platformaware};
                 init_conj_grad, 
                 update_x, 
                 move_a_to_device, 
-                alloc_a_h, 
+//                alloc_a_h, 
                 alloc_a_d, 
-                alloc_colidx_h, 
+//                alloc_colidx_h, 
                 alloc_colidx_d, 
-                alloc_rowstr_h, 
+//                alloc_rowstr_h, 
                 alloc_rowstr_d, 
                 alloc_x, 
                 alloc_p, 
@@ -231,6 +231,8 @@ mod cg {
         } else {
             ThreadPoolBuilder::new().build_global().unwrap();
         }
+
+
 
         let mut colidx_d: Vec<i32> = alloc_colidx_d();
         let mut colidx_h: Vec<i32> = alloc_colidx_h();
@@ -983,17 +985,12 @@ mod cg {
         }
     }
 
-    #[kernelversion]
-    fn alloc_a_h() -> Vec<f64> { vec![0.0; NZ] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_a_h() -> Vec<f64> { vec![0.0; NZ] }
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
+
     fn alloc_a_h() -> Vec<f64> { vec![0.0; NZ] }
 
     #[kernelversion]
-    fn alloc_a_d() -> Vec<f64> { vec![0.0; NZ] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_a_d() -> Vec<f64> { vec![0.0; NZ] }
+    fn alloc_a_d() -> Vec<f64> { vec![0.0; 0] }
+
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_a_d() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
@@ -1001,17 +998,12 @@ mod cg {
         unsafe { Vec::from_raw_parts(ptr, NZ, NZ) }
     }
 
-    #[kernelversion]
-    fn alloc_colidx_h() -> Vec<i32> { vec![0; NZ] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_colidx_h() -> Vec<i32> { vec![0; NZ] }
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_colidx_h() -> Vec<i32> { vec![0; NZ] }
 
+    
     #[kernelversion]
-    fn alloc_colidx_d() -> Vec<i32> { vec![0; NZ] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_colidx_d() -> Vec<i32> { vec![0; NZ] }
+    fn alloc_colidx_d() -> Vec<i32> { vec![0; 0] }
+
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_colidx_d() -> Vec<i32> { 
         let mut ptr: *mut i32 = std::ptr::null_mut();
@@ -1019,17 +1011,11 @@ mod cg {
         unsafe { Vec::from_raw_parts(ptr, NZ, NZ) }
     }
 
+    fn alloc_rowstr_h() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    
     #[kernelversion]
-    fn alloc_rowstr_h() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_rowstr_h() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
-    fn alloc_rowstr_h() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
+    fn alloc_rowstr_d() -> Vec<i32>  { vec![0; 0] }
 
-    #[kernelversion]
-    fn alloc_rowstr_d() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_rowstr_d() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_rowstr_d() -> Vec<i32>  { 
         let mut ptr: *mut i32 = std::ptr::null_mut();
@@ -1039,8 +1025,7 @@ mod cg {
 
     #[kernelversion]
     fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_x() -> Vec<f64> { vec![1.0; NA as usize + 2] }
+
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_x() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
@@ -1050,8 +1035,7 @@ mod cg {
 
     #[kernelversion]
     fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_z() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_z() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
@@ -1061,8 +1045,7 @@ mod cg {
 
     #[kernelversion]
     fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_p() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_p() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
@@ -1072,8 +1055,7 @@ mod cg {
 
     #[kernelversion]
     fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_q() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_q() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
@@ -1083,8 +1065,7 @@ mod cg {
 
     #[kernelversion]
     fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
-    fn alloc_r() -> Vec<f64> { vec![0.0; NA as usize + 2] }
+ 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_r() -> Vec<f64> { 
         let mut ptr: *mut f64 = std::ptr::null_mut();
@@ -1144,14 +1125,6 @@ mod cg {
     }
 
     #[kernelversion]
-    fn move_a_to_device(colidx_h: &[i32],  rowstr_h: &[i32], a_h: &[f64], 
-                        colidx_d: &mut [i32],  rowstr_d: &mut [i32], a_d: &mut [f64]) { 
-                            colidx_d.copy_from_slice(colidx_h);
-                            rowstr_d.copy_from_slice(rowstr_h);
-                            a_d.copy_from_slice(a_h);
-                        }
-
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn move_a_to_device(colidx_h: &[i32],  rowstr_h: &[i32], a_h: &[f64], 
                         colidx_d: &mut [i32],  rowstr_d: &mut [i32], a_d: &mut [f64]) { 
                             colidx_d.copy_from_slice(colidx_h);
@@ -1318,9 +1291,6 @@ mod cg {
     }
 
     #[kernelversion]
-    fn freevectors() {}
-
-    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn freevectors() {}
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
