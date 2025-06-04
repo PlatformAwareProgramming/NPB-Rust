@@ -2,6 +2,7 @@
 
 
 #define BLOCK_SIZE 256
+#define warpSize 32
 
 extern "C" {
 
