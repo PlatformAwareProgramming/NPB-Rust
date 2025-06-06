@@ -1,5 +1,8 @@
 #include "../cgkernels.h"
 
+#include <cuda_runtime.h>
+#include <cusparse.h>
+
 #define BLOCK_SIZE 4
 
 extern "C" {
@@ -83,17 +86,9 @@ void alloc_r_gpu(double** x, int m) {
     d_r = *x;
 }
 
+// cusparseSpMatDescr_t matA;
 
-void free_vectors_gpu() {
-    CUDA_CHECK(cudaFree(d_colidx));
-    CUDA_CHECK(cudaFree(d_rowstr));
-    CUDA_CHECK(cudaFree(d_a));
-    CUDA_CHECK(cudaFree(d_x));
-    CUDA_CHECK(cudaFree(d_z));
-    CUDA_CHECK(cudaFree(d_p));
-    CUDA_CHECK(cudaFree(d_q));
-    CUDA_CHECK(cudaFree(d_r));
- }
+
 
 void launch_init_x_gpu(double* x, int n)
 {
@@ -130,12 +125,74 @@ void launch_init_conj_grad_gpu(double* x, double* q, double* z, double* r, doubl
 
 }
 
+cusparseHandle_t handle;
+cusparseSpMatDescr_t matA;
+cusparseDnVecDescr_t vecY;
+cusparseDnVecDescr_t vecX;
+size_t bufferSize = 0;
+void* dBuffer = nullptr;
+
 void move_a_to_device_gpu(const int* h_colidx, const int* h_rowstr, const double* h_a, int nnz, int num_rows) {
     CUDA_CHECK(cudaMemcpy(d_a, h_a, nnz * sizeof(double), cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemcpy(d_colidx, h_colidx, nnz * sizeof(int), cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemcpy(d_rowstr, h_rowstr, (num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
+
+    // Inicialização (uma vez)
+    cusparseCreate(&handle);
+
+    int x_len = num_rows;
+
+    cusparseCreateCsr(
+        &matA,
+        num_rows,
+        x_len,
+        nnz,
+        d_rowstr,
+        d_colidx,
+        d_a,
+        CUSPARSE_INDEX_32I,
+        CUSPARSE_INDEX_32I,
+        CUSPARSE_INDEX_BASE_ZERO,
+        CUDA_R_64F
+    );
+
+    cusparseCreateDnVec(&vecX, x_len, d_p, CUDA_R_64F);
+    cusparseCreateDnVec(&vecY, num_rows, d_q, CUDA_R_64F);
+
+    const double alpha = 1.0;
+    const double beta = 0.0;
+
+    cusparseSpMV_bufferSize(
+        handle,
+        CUSPARSE_OPERATION_NON_TRANSPOSE,
+        &alpha,
+        matA,
+        vecX,
+        &beta,
+        vecY,
+        CUDA_R_64F,
+        CUSPARSE_SPMV_ALG_DEFAULT,
+        &bufferSize
+    );
+    
+    cudaMalloc(&dBuffer, bufferSize);
 }
 
+void free_vectors_gpu() {
+    cudaFree(dBuffer);
+    cusparseDestroySpMat(matA);
+    cusparseDestroyDnVec(vecY);
+    cusparseDestroy(handle);
+
+    CUDA_CHECK(cudaFree(d_colidx));
+    CUDA_CHECK(cudaFree(d_rowstr));
+    CUDA_CHECK(cudaFree(d_a));
+    CUDA_CHECK(cudaFree(d_x));
+    CUDA_CHECK(cudaFree(d_z));
+    CUDA_CHECK(cudaFree(d_p));
+    CUDA_CHECK(cudaFree(d_q));
+    CUDA_CHECK(cudaFree(d_r));
+ }
 
 void launch_update_x_gpu(double norm_temp2, const double* z, double* x, int n)
 {

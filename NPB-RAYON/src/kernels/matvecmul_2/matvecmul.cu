@@ -31,29 +31,31 @@ void matvecmul_RTX4100Ada(
     int lane = threadIdx.x % warpSize;
     int total_warps = (gridDim.x * blockDim.x) / warpSize;
 
-    for (int row = warp_id; row < num_rows; row += total_warps) {
-        int row_start = __ldg(&rowstr[row]);
-        int row_end = __ldg(&rowstr[row + 1]);
+    if (warp_id < num_rows) {
+        for (int row = warp_id; row < num_rows; row += total_warps) {
+            int row_start = __ldg(&rowstr[row]);
+            int row_end = __ldg(&rowstr[row + 1]);
 
-        double sum = 0.0;
+            double sum = 0.0;
 
-        for (int jj = row_start + lane; jj < row_end; jj += warpSize) {
-            double val_a = __ldg(&a[jj]);
-            int col = __ldg(&colidx[jj]);
-            double val_x = __ldg(&x[col]);
-            sum += val_a * val_x;
-        }
+            for (int jj = row_start + lane; jj < row_end; jj += warpSize) {
+                double val_a = __ldg(&a[jj]);
+                int col = __ldg(&colidx[jj]);
+                double val_x = __ldg(&x[col]);
+                sum += val_a * val_x;
+            }
 
-        sum = warp_reduce_sum(sum);
+            sum = warp_reduce_sum(sum);
 
-        if (lane == 0) {
-            y[row] = sum;
+            if (lane == 0) {
+                y[row] = sum;
+            }
         }
     }
 }
 
 
-void launch_matvecmul_RTX4000Ada(
+void launch_matvecmul_CC70(
     const double* d_aa,
     const int* d_colidx,
     const int* d_rowstr,
@@ -68,7 +70,7 @@ void launch_matvecmul_RTX4000Ada(
     int blockSize = BLOCK_SIZE;
     int gridSize = (num_rows * warpSize + blockSize - 1) / blockSize;
 
-    cudaFuncSetAttribute(matvecmul_RTX4100Ada, cudaFuncAttributePreferredSharedMemoryCarveout, 100); // 100% shared memory convertida em L1 cache
+    // cudaFuncSetAttribute(matvecmul_RTX4100Ada, cudaFuncAttributePreferredSharedMemoryCarveout, 100); // 100% shared memory convertida em L1 cache
 
     matvecmul_RTX4100Ada<<<gridSize, blockSize>>>(
         d_aa, d_colidx, d_rowstr, d_xx, d_yy, num_rows

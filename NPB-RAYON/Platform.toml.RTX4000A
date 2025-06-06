@@ -2,17 +2,17 @@
 acc_manufacturer = "NVIDIA"
 acc_memory_type = "GDDR6"
 acc_count = 1
-acc_backend = ["CUDA90","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_12_2"]
-acc_computecapability=86
-# acc_driver = 460
-acc_architecture = "Ampere"
-acc_model = "NVidiaMTX570A"
+acc_backend = ["CUDA120","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_12_2"]
+acc_computecapability = 89
+# acc_driver = 525
+acc_architecture = "Ada"
+acc_model = "NVidiaRTX4000Ada"
 acc_cpu_count = 1
-acc_processor = "GA107SB"
-acc_memory_size = 2
-acc_tdp = 25
+acc_processor = "AD104"
+acc_memory_size = 20
+acc_tdp = 130
 acc_type = "GPU"
-# source: https://www.techpowerup.com/gpu-specs/geforce-mx570-a.c3943
+# source: https://www.techpowerup.com/gpu-specs/rtx-4000-ada-generation.c4171
 
 [processor]
 cpu_core_count = 12

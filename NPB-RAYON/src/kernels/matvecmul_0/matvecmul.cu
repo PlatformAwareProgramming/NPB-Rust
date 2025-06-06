@@ -5,7 +5,6 @@
 
 extern "C" {
 
-
  __global__ void matvecmul_cuda(
     const double* a,
     const int* colidx,
@@ -43,7 +42,6 @@ void launch_matvecmul_cuda(
     int blockSize = BLOCK_SIZE;
     int gridSize = (num_rows + blockSize - 1) / blockSize ;
 
-  //  cudaOccupancyMaxPotentialBlockSize( &gridSize, &blockSize, matvecmul_MX570A, 0, 0); 
 
     matvecmul_cuda<<<gridSize, blockSize>>>(
         d_aa, d_colidx, d_rowstr, d_xx, d_yy, num_rows
