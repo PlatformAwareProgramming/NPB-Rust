@@ -1,0 +1,34 @@
+[accelerator]
+acc_manufacturer = "NVIDIA"
+acc_memory_type = "GDDR5"
+acc_count = 1
+acc_backend = ["CUDA102"]
+acc_computecapability = 30
+acc_driver = 470.256 
+acc_architecture = "Kepler"
+acc_model = "GeForce GTX 760"
+acc_cpu_count = 1
+acc_processor = "GK104"
+acc_memory_size = 2048    # 2GB
+acc_tdp = 170
+acc_type = "GPU"
+
+[processor]
+cpu_core_count = 6
+cpu_count = 1
+cpu_core_threads_count = 2
+cpu_simd = ["AVX"]
+cpu_L2_size = 262144
+cpu_L3_size = 15728640
+cpu_L1_size = 32768
+cpu_core_clock = 2100
+cpu_manufacturer = "Intel"
+cpu_isa = "ISA_x86_64_v3"
+cpu_tdp = 80
+cpu_model = "Intel(R) Xeon(R) CPU E5-2620 v2 @ 2.10GHz"
+cpu_microarchitecture = "Ivy Bridge"
+
+[memory]
+mem_frequency = 1600
+mem_size = 32058 
+mem_type = "DDR3"
