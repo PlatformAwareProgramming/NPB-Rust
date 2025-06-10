@@ -36,7 +36,7 @@ void matvecmul_CC60(
         &beta,
         vecY,
         CUDA_R_64F,
-        CUSPARSE_SPMV_ALG_DEFAULT,
+        CUSPARSE_MV_ALG_DEFAULT,
         dBuffer
     );
     

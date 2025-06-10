@@ -171,7 +171,7 @@ void move_a_to_device_gpu(const int* h_colidx, const int* h_rowstr, const double
         &beta,
         vecY,
         CUDA_R_64F,
-        CUSPARSE_SPMV_ALG_DEFAULT,
+        CUSPARSE_MV_ALG_DEFAULT,
         &bufferSize
     );
     

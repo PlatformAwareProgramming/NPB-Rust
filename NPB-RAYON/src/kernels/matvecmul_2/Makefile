@@ -4,12 +4,17 @@ CUDA_OBJ = matvecmul2.o
 CUDA_LIB = libmatvecmul2.so
 
 # Compilador CUDA
+ifdef DOCKER_CUDA
+NVCC = docker run -v "$$(dirname "$$PWD")":"$$(dirname "$$PWD")" -w "$$PWD" --rm --gpus all -it cuda-10-2-dev nvcc
+CC = docker run -v "$$(dirname "$$PWD")":"$$(dirname "$$PWD")" -w "$$PWD" --rm --gpus all -it cuda-10-2-dev gcc
+CUDA_FLAGS = -arch=sm_35 --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets
+CC_FLAGS = -shared -lcudart -L/usr/local/cuda/lib64
+else
 NVCC = nvcc
 CC = gcc
-
-# Flags de compilação
-CUDA_FLAGS = -arch=sm_70 -O3 -use_fast_math -Xptxas="-dlcm=ca" -lineinfo --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets
+CUDA_FLAGS = -arch=sm_35 --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets
 CC_FLAGS = -shared -lcudart -L$(CUDA_LIBDIR)
+endif
 
 # Criação da biblioteca compartilhada a partir do objeto compilado
 $(CUDA_LIB): $(CUDA_OBJ)
