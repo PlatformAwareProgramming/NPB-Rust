@@ -19,7 +19,7 @@ __inline__ __device__ double warp_reduce_sum(double val) {
 }
 
 __global__ __launch_bounds__(BLOCK_SIZE, 2)  // 2 blocos por SM como sugestão
-void matvecmul_RTX4100Ada(
+void matvecmul_CC70(
     const double* __restrict__ a,
     const int* __restrict__ colidx,
     const int* __restrict__ rowstr,
@@ -70,9 +70,9 @@ void launch_matvecmul_CC70(
     int blockSize = BLOCK_SIZE;
     int gridSize = (num_rows * warpSize + blockSize - 1) / blockSize;
 
-    // cudaFuncSetAttribute(matvecmul_RTX4100Ada, cudaFuncAttributePreferredSharedMemoryCarveout, 100); // 100% shared memory convertida em L1 cache
+    // cudaFuncSetAttribute(matvecmul_CC70, cudaFuncAttributePreferredSharedMemoryCarveout, 100); // 100% shared memory convertida em L1 cache
 
-    matvecmul_RTX4100Ada<<<gridSize, blockSize>>>(
+    matvecmul_CC70<<<gridSize, blockSize>>>(
         d_aa, d_colidx, d_rowstr, d_xx, d_yy, num_rows
     );
 

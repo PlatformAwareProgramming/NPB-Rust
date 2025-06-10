@@ -1184,7 +1184,8 @@ mod cg {
         
     }
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA20, acc_computecapability=(AtLeast{val:13}))]
+//    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA20, acc_computecapability=(AtLeast{val:13}))]
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn matvecmul(
         colidx: &[i32],
         rowstr: &[i32], 
@@ -1245,7 +1246,7 @@ mod cg {
         x: &[f64],
         y: &mut[f64],
     ) {
-        //println!("third");
+     //   println!("third");
         let nnz = a.len() as i32;
         let num_rows = y.len() as i32;
         let x_len = x.len() as i32;
@@ -1272,7 +1273,7 @@ mod cg {
         x: &[f64],
         y: &mut[f64],
     ) {
-        //println!("fourth");
+       // println!("fourth");
         let nnz = a.len() as i32;
         let num_rows = y.len() as i32;
         let x_len = x.len() as i32;

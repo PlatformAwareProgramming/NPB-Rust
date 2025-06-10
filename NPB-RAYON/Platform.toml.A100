@@ -3,13 +3,13 @@ acc_manufacturer = "NVIDIA"
 acc_memory_type = "HBM2e"
 acc_count = 2
 acc_backend = ["CUDA110","OpenCL_3_0"]
-acc_computecapability=80
-# acc_driver = 450
+acc_computecapability=80                     # minimum between GPUs's compute capability (80) and supported by installed driver (90)
+acc_driver = 550                             # 550.90.07 -- required by the GPU: 450
 acc_architecture = "Ampere"
 acc_model = "NVidiaA100"
 acc_cpu_count = 1
 acc_processor = "GA100"
-acc_memory_size = 80
+acc_memory_size = 81920  # 80GB
 acc_tdp = 300
 acc_type = "GPU"
 # source: https://www.techpowerup.com/gpu-specs/a100-pcie-80-gb.c3821

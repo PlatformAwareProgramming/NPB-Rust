@@ -2,8 +2,8 @@
 acc_manufacturer = "NVIDIA"
 acc_memory_type = "GDDR6"
 acc_count = 1
-acc_backend = ["CUDA90","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_12_2"]
-acc_computecapability=86
+acc_backend = ["CUDA110","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_12_2"]
+acc_computecapability= 60 #86
 # acc_driver = 460
 acc_architecture = "Ampere"
 acc_model = "NVidiaMTX570A"

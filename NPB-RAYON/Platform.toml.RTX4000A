@@ -3,13 +3,13 @@ acc_manufacturer = "NVIDIA"
 acc_memory_type = "GDDR6"
 acc_count = 1
 acc_backend = ["CUDA120","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_12_2"]
-acc_computecapability = 89
-# acc_driver = 525
+acc_computecapability = 89           # minimum between GPUs's compute capability (89) and supported by installed driver (90)
+acc_driver = 570                     # 570.133.07 -- required by the GPU: 460
 acc_architecture = "Ada"
 acc_model = "NVidiaRTX4000Ada"
 acc_cpu_count = 1
 acc_processor = "AD104"
-acc_memory_size = 20
+acc_memory_size = 20480    # 20GB
 acc_tdp = 130
 acc_type = "GPU"
 # source: https://www.techpowerup.com/gpu-specs/rtx-4000-ada-generation.c4171
