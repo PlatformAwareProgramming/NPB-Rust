@@ -6,16 +6,14 @@ fn main() {
 
 use platform_aware::{platformaware};
 
-#[platformaware(init_x, 
-                init_conj_grad, 
+#[platformaware(announce_platform,
+                init_x, 
                 update_x, 
-                move_a_to_device, 
-//                alloc_a_h, 
+                init_conj_grad, 
                 alloc_a_d, 
-//                alloc_colidx_h, 
                 alloc_colidx_d, 
-//                alloc_rowstr_h, 
                 alloc_rowstr_d, 
+                move_a_to_device, 
                 alloc_x, 
                 alloc_p, 
                 alloc_q, 
@@ -272,6 +270,8 @@ mod cg {
         print!("\n\n NAS Parallel Benchmarks 4.1 Parallel Rust version with Rayon - CG Benchmark\n\n");
         print!(" Size: {:>11}\n", NA);
         print!(" Iterations: {:>5}\n", NITER);
+
+        announce_platform();
 
         /* initialize random number generator */
         tran = 314159265.0;
@@ -986,7 +986,7 @@ mod cg {
     fn alloc_a_h() -> Vec<f64> { vec![0.0; NZ] }
 
     #[kernelversion]
-    fn alloc_a_d() -> Vec<f64> { vec![0.0; 0] }
+    fn alloc_a_d() -> Vec<f64> { vec![0.0; NZ] }
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_a_d() -> Vec<f64> { 
@@ -999,7 +999,7 @@ mod cg {
 
     
     #[kernelversion]
-    fn alloc_colidx_d() -> Vec<i32> { vec![0; 0] }
+    fn alloc_colidx_d() -> Vec<i32> { vec![0; NZ] }
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_colidx_d() -> Vec<i32> { 
@@ -1011,7 +1011,7 @@ mod cg {
     fn alloc_rowstr_h() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
     
     #[kernelversion]
-    fn alloc_rowstr_d() -> Vec<i32>  { vec![0; 0] }
+    fn alloc_rowstr_d() -> Vec<i32>  { vec![0; (NA + 1) as usize] }
 
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA)]
     fn alloc_rowstr_d() -> Vec<i32>  { 
@@ -1136,6 +1136,24 @@ mod cg {
         let num_rows = rowstr_h.len() as i32;
         unsafe { move_a_to_device_gpu (colidx_h.as_ptr(), rowstr_h.as_ptr(), a_h.as_ptr(), nnz, num_rows) }
     }
+
+    #[kernelversion]
+    fn announce_platform() { println!("=======> DEFAULT (serial)") }
+
+    #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
+    fn announce_platform() { println!("=======> MULTITHREADING (parallel)") }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA20, acc_computecapability=(AtLeast{val:13}))]  // 177.13 -- 190.38
+    fn announce_platform() { println!("=======> CUDA default") }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA50, acc_computecapability=(AtLeast{val:35}))]  // 319.37  -- 304.54
+    fn announce_platform() { println!("=======> CUDA 1") }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA90, acc_computecapability=(AtLeast{val:70}))]  // 384.81 -- ...
+    fn announce_platform() { println!("=======> CUDA 2") }
+
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA101, acc_computecapability=(AtLeast{val:60}))]  // 418.39 -- ...
+    fn announce_platform() { println!("=======> CUDA 3") }
 
     // y = a * x (sequential)
     #[kernelversion]
