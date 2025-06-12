@@ -1256,34 +1256,7 @@ mod cg {
         }
     }
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA90, acc_computecapability=(AtLeast{val:70}))]
-    fn matvecmul(
-        colidx: &[i32],
-        rowstr: &[i32], 
-        a: &[f64],
-        x: &[f64],
-        y: &mut[f64],
-    ) {
-     //   println!("third");
-        let nnz = a.len() as i32;
-        let num_rows = y.len() as i32;
-        let x_len = x.len() as i32;
-
-        unsafe {
-            launch_matvecmul_CC70(
-                a.as_ptr(),
-                colidx.as_ptr(),
-                rowstr.as_ptr(),
-                x.as_ptr(),
-                y.as_mut_ptr(),
-                nnz,
-                num_rows,
-                x_len,
-            );
-        }
-    }
-
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA101, acc_computecapability=(AtLeast{val:60}))]
+     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA101, acc_computecapability=(AtLeast{val:60}))]
     fn matvecmul(
         colidx: &[i32],
         rowstr: &[i32], 
@@ -1310,6 +1283,33 @@ mod cg {
         }
     }
 
+   #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA90, acc_computecapability=(AtLeast{val:70}))]
+    fn matvecmul(
+        colidx: &[i32],
+        rowstr: &[i32], 
+        a: &[f64],
+        x: &[f64],
+        y: &mut[f64],
+    ) {
+     //   println!("third");
+        let nnz = a.len() as i32;
+        let num_rows = y.len() as i32;
+        let x_len = x.len() as i32;
+
+        unsafe {
+            launch_matvecmul_CC70(
+                a.as_ptr(),
+                colidx.as_ptr(),
+                rowstr.as_ptr(),
+                x.as_ptr(),
+                y.as_mut_ptr(),
+                nnz,
+                num_rows,
+                x_len,
+            );
+        }
+    }
+        
     #[kernelversion]
     fn freevectors() {}
 
