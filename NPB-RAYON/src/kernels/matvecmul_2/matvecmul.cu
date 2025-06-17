@@ -1,7 +1,7 @@
 #include "../cgkernels.h"
 
 
-#define BLOCK_SIZE 256
+#define BLOCK_SIZE 32
 #define warpSize 32
 
 extern "C" {
