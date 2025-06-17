@@ -1143,16 +1143,28 @@ mod cg {
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]
     fn announce_platform() { println!("=======> MULTITHREADING (parallel with {} threads)", rayon::current_num_threads()) }
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, acc_cudatoolkit=(AtLeast{val:20}), acc_cudacc=(AtLeast{val:13}), acc_cudadriver=(AtLeast{val:17713}))]  // 177.13 -- 190.38
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, 
+                                                acc_cudatoolkit=(AtLeast{val:20}), 
+                                                acc_cudacc=(AtLeast{val:13}), 
+                                                acc_cudadriver=(AtLeast{val:17713}))]  // 177.13 -- 190.38
     fn announce_platform() { println!("=======> CUDA default") }
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, acc_cudatoolkit=(AtLeast{val:50}), acc_cudacc=(AtLeast{val:35}), acc_cudadriver=(AtLeast{val:31937}))]  // 319.37  -- 304.54
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, 
+                                                acc_cudatoolkit=(AtLeast{val:50}), 
+                                                acc_cudacc=(AtLeast{val:35}), 
+                                                acc_cudadriver=(AtLeast{val:31937}))]  // 319.37  -- 304.54
     fn announce_platform() { println!("=======> CUDA 1") }
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, acc_cudatoolkit=(AtLeast{val:101}), acc_cudacc=(AtLeast{val:60}), acc_cudadriver=(AtLeast{val:41839}))]  // 418.39 -- ...
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, 
+                                                acc_cudatoolkit=(AtLeast{val:101}), 
+                                                acc_cudacc=(AtLeast{val:60}), 
+                                                acc_cudadriver=(AtLeast{val:41839}))]  // 418.39 -- ...
     fn announce_platform() { println!("=======> CUDA 2") }
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, acc_cudatoolkit=(AtLeast{val:90}), acc_cudacc=(AtLeast{val:70}), acc_cudadriver=(AtLeast{val:38481}))]  // 384.81 -- ...
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, 
+                                                acc_cudatoolkit=(AtLeast{val:90}), 
+                                                acc_cudacc=(AtLeast{val:70}), 
+                                                acc_cudadriver=(AtLeast{val:38481}))]  // 384.81 -- ...
     fn announce_platform() { println!("=======> CUDA 3") }
 
 
@@ -1203,7 +1215,10 @@ mod cg {
         
     }
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, acc_cudatoolkit=(AtLeast{val:20}), acc_cudacc=(AtLeast{val:13}), acc_cudadriver=(AtLeast{val:17713}))]  // 177.13 -- 190.38
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, 
+                                                acc_cudatoolkit=(AtLeast{val:20}), 
+                                                acc_cudacc=(AtLeast{val:13}), 
+                                                acc_cudadriver=(AtLeast{val:17713}))]  // 177.13 -- 190.38
     fn matvecmul(
         colidx: &[i32],
         rowstr: &[i32], 
@@ -1230,7 +1245,10 @@ mod cg {
     }
 
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, acc_cudatoolkit=(AtLeast{val:50}), acc_cudacc=(AtLeast{val:35}), acc_cudadriver=(AtLeast{val:31937}))]  // 319.37  -- 304.54
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, 
+                                                acc_cudatoolkit=(AtLeast{val:50}), 
+                                                acc_cudacc=(AtLeast{val:35}), 
+                                                acc_cudadriver=(AtLeast{val:31937}))]  // 319.37  -- 304.54
     fn matvecmul(
         colidx: &[i32],
         rowstr: &[i32], 
@@ -1256,7 +1274,10 @@ mod cg {
         }
     }
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, acc_cudatoolkit=(AtLeast{val:101}), acc_cudacc=(AtLeast{val:60}), acc_cudadriver=(AtLeast{val:41839}))]  // 418.39 -- ...
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, 
+                                                acc_cudatoolkit=(AtLeast{val:101}), 
+                                                acc_cudacc=(AtLeast{val:60}), 
+                                                acc_cudadriver=(AtLeast{val:41839}))]  // 418.39 -- ...
     fn matvecmul(
         colidx: &[i32],
         rowstr: &[i32], 
@@ -1283,7 +1304,10 @@ mod cg {
         }
     }
 
-    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, acc_cudatoolkit=(AtLeast{val:90}), acc_cudacc=(AtLeast{val:70}), acc_cudadriver=(AtLeast{val:38481}))]  // 384.81 -- ...
+    #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, 
+                                                acc_cudatoolkit=(AtLeast{val:90}), 
+                                                acc_cudacc=(AtLeast{val:70}), 
+                                                acc_cudadriver=(AtLeast{val:38481}))]  // 384.81 -- ...
     fn matvecmul(
         colidx: &[i32],
         rowstr: &[i32], 
