@@ -1,15 +1,15 @@
 # Caminhos para os arquivos
 CUDA_SRC = matvecmul.cu 
-CUDA_OBJ = matvecmul3.o
-CUDA_LIB = libmatvecmul3.so
+CUDA_OBJ = matvecmul2.o
+CUDA_LIB = libmatvecmul2.so
 
 # Compilador CUDA
 NVCC = nvcc
 CC = gcc
 
 # Flags de compilação
-CUDA_FLAGS = -arch=sm_60 -O3 -use_fast_math -Xptxas="-dlcm=ca" -lineinfo --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets
-CC_FLAGS = -shared -lcudart -lcusparse -L$(CUDA_LIBDIR)
+CUDA_FLAGS = -arch=sm_70 -O3 -use_fast_math -Xptxas="-dlcm=ca" -lineinfo --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets
+CC_FLAGS = -shared -lcudart -L$(CUDA_LIBDIR)
 
 # Criação da biblioteca compartilhada a partir do objeto compilado
 $(CUDA_LIB): $(CUDA_OBJ)

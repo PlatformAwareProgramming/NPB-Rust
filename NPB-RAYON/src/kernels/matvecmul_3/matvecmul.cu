@@ -8,8 +8,6 @@ extern "C" {
 
 #include <cuda_runtime.h>
 
-#define BLOCK_SIZE 256  // Tamanho do bloco ajustável
-
 __inline__ __device__ double warp_reduce_sum(double val) {
     // Redução dentro do warp
     for (int offset = warpSize / 2; offset > 0; offset /= 2) {
