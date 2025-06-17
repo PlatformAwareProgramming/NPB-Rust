@@ -8,7 +8,10 @@ NVCC = nvcc
 CC = gcc
 
 # Flags de compilação
-CUDA_FLAGS = -arch=sm_35 --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets
+CUDA_FLAGS = --compiler-options '-fPIC' -c -Wno-deprecated-gpu-targets \
+  -gencode arch=compute_35,code=sm_35 \
+  -gencode arch=compute_50,code=sm_50 \
+  -gencode arch=compute_52,code=sm_52
 CC_FLAGS = -shared -lcudart -L$(CUDA_LIBDIR)
 
 # Criação da biblioteca compartilhada a partir do objeto compilado
