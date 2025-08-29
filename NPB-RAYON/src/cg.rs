@@ -1,4 +1,5 @@
 mod common;
+mod class;
 
 fn main() {
     cg::main();
@@ -34,6 +35,7 @@ mod cg {
     use rayon::prelude::*;
     use rayon::ThreadPoolBuilder;
     use std::env;
+    use crate::class::*;
 
     use platform_aware_nvidia::*;
 
@@ -1164,7 +1166,8 @@ mod cg {
     #[kernelversion(acc_count=(AtLeast{val:1}), acc_backend=CUDA, 
                                                 acc_cudatoolkit=(AtLeast{val:90}), 
                                                 acc_cudacc=(AtLeast{val:70}), 
-                                                acc_cudadriver=(AtLeast{val:38481}))]  // 384.81 -- ...
+                                                acc_cudadriver=(AtLeast{val:38481}), 
+                                                npb_problemclass = ClassC)]  // 384.81 -- ...
     fn announce_platform() { println!("=======> CUDA 3") }
 
 
@@ -1475,3 +1478,5 @@ mod cg {
         { unsafe { launch_update_x_gpu(norm_temp2, z.as_ptr(), x.as_mut_ptr(), (LASTCOL - FIRSTCOL + 1) as i32) } }
     }
 }
+
+

@@ -1,3 +1,7 @@
+
+[kernel]
+npb_problemclass = "ClassE"
+
 [accelerator]
 acc_manufacturer = "NVIDIA"
 acc_memory_type = "GDDR6"
