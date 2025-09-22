@@ -99,7 +99,7 @@ mod params {
 		Must set a class at compilation time by setting RUSTFLAGS\n\
 		class options for IS are: {S, W, A, B, C, D}\n\
 		For example:\n\
-		RUSTFLAGS='--cfg class=\"A\" ' cargo build --release --bin is\n\n\n\
+		RUSTFLAGS='--cfg class=\"A\"' cargo build --release --bin is\n\n\n\
 	"
     );
 }

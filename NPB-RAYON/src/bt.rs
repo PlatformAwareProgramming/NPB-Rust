@@ -90,7 +90,7 @@ mod params {
 		Must set a class at compilation time by setting RUSTFLAGS\n\
 		class options for BT are: {S, W, A, B, C, D, E}\n\
 		For example:\n\
-		RUSTFLAGS='--cfg class=\"A\" ' cargo build --release --bin bt\n\n\n\
+		RUSTFLAGS='--cfg class=\"A\"' cargo build --release --bin bt\n\n\n\
 	"
     );
 }
