@@ -1,20 +1,19 @@
-
 [kernel]
-npb_problemclass = "ClassE"
+problemclass = "ClassC" 
 
 [accelerator]
 acc_manufacturer = "NVIDIA"
 acc_memory_type = "GDDR6"
 acc_count = 1
 acc_backend = ["CUDA","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_12_2"]
-acc_cudacc=86
-acc_cudadriver = 46000
-acc_cudatoolkit=  101
+acc_cudatoolkit=90
+acc_cudacc=86                      # minimum between GPUs's compute capability (86) and supported by installed driver (90)
+acc_cudadriver = 57000                              # 570.133.07 -- required by the GPU: 460
 acc_architecture = "Ampere"
 acc_model = "NVidiaMTX570A"
 acc_cpu_count = 1
 acc_processor = "GA107SB"
-acc_memory_size = 2
+acc_memory_size = 2048    # 2GB
 acc_tdp = 25
 acc_type = "GPU"
 # source: https://www.techpowerup.com/gpu-specs/geforce-mx570-a.c3943

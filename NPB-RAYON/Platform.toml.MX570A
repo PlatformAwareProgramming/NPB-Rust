@@ -1,3 +1,6 @@
+[kernel]
+problemclass = "ClassS" 
+
 [accelerator]
 acc_manufacturer = "NVIDIA"
 acc_memory_type = "GDDR6"

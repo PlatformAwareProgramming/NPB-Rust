@@ -40,12 +40,12 @@
 [dependencies]
 rayon = "1.10"
 platform-aware = { path = "../../platform-aware"}
-platform-aware-features = { path = "../../platform-aware/platform-aware-features"}
 platform-aware-amd = { path = "../../platform-aware/platform-aware-amd"}
 platform-aware-intel = { path = "../../platform-aware/platform-aware-intel"}
 platform-aware-nvidia = { path = "../../platform-aware/platform-aware-nvidia"}
+platform-aware-features = { path = "../../platform-aware/platform-aware-features"}
 lazy_static = "1.5.0"
-ctor = "0.5.0"
+ctor = "0.6.1"
 toml = "0.9.5"
 serde = "1.0.219"
 
