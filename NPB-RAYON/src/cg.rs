@@ -34,7 +34,7 @@ fn main() {
 
     let mut cgst = CGstate::new(tran);
 
-    cgst.cg(tran, timers);
+    cgst.cg(timers);
     
 }
 
@@ -75,15 +75,15 @@ pub const EPSILON: f64 = 1.0e-10;
 /* cg */
 
 trait ConjGrad {
-    fn cg(self: &mut Self, tran:f64, timers: Timer);
+    fn announce_platform(self: &mut Self);
+    fn cg(self: &mut Self, timers: Timer);
     fn conj_grad(self:&mut Self, rnorm: &mut f64,  timers: &mut Timer);
+    fn init_x(self: &mut Self);
+    fn update_x(self: &mut Self, norm_temp2: f64/*, z: &[f64], x: &mut Vec<f64>*/);
+    fn init_conj_grad(self: &mut Self);
 }
 
 trait Kernels {
-    fn init_x(self: &mut Self, x: &mut [f64]);
-    fn update_x(self: &mut Self, norm_temp2: f64, z: &[f64], x: &mut Vec<f64>);
-    fn init_conj_grad(self: &mut Self, x: &mut [f64], q: &mut [f64], z: &mut [f64], r: &mut [f64], p: &mut [f64]);
-    fn announce_platform(self: &mut Self);
     fn matvecmul(self: &mut Self, colidx: &[i32], rowstr: &[i32], a: &[f64], x: &[f64], y: &mut[f64]);
     fn vecvecmul(self: &mut Self, x: &[f64], y: &[f64]) -> f64;
     fn scalarvecmul2(self: &mut Self, alpha:f64, x: &[f64], y: &mut [f64]);
@@ -93,7 +93,9 @@ trait Kernels {
 
 impl ConjGrad for CGstate {
 
-    fn cg(self: &mut Self, mut tran:f64, mut timers: Timer) {
+    fn announce_platform(self: &mut Self) { cg::announce_platform(); }
+
+    fn cg(self: &mut Self, mut timers: Timer) {
 
     let mut zeta: f64 = 0.0;
     let mut rnorm: f64 = 0.0;
@@ -103,7 +105,6 @@ impl ConjGrad for CGstate {
 
     print!("\n\n NAS Parallel Benchmarks 4.1 Parallel Rust version with Rayon - CG Benchmark\n\n");
     
-    let COL_SIZE = self.a.LASTCOL - self.a.FIRSTCOL + 1;
     let NA = self.params.NA;
     let NITER = self.params.NITER;
     let NONZER = self.params.NONZER;
@@ -116,7 +117,7 @@ impl ConjGrad for CGstate {
 
     let mut kdata = KParams { FIRSTCOL: self.a.FIRSTCOL, LASTCOL: self.a.LASTCOL, NA: self.params.NA};
 
-    kdata.announce_platform();
+    self.announce_platform();
 
     /*
     * -------------------------------------------------------------------
@@ -137,18 +138,16 @@ impl ConjGrad for CGstate {
         * --------------------------------------------------------------------
         */
 
-        let z = &mut self.z[..];
-        let x = &mut self.x;
-
-        norm_temp2 = kdata.vecvecmul(z, z);
+    
+        norm_temp2 = kdata.vecvecmul(&self.z[..], &self.z[..]);
         norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
 
         /* normalize z to obtain x */
-        kdata.update_x(norm_temp2, z, &mut self.x);
+        self.update_x(norm_temp2);
     } /* end of do one iteration untimed */
 
     /* set starting vector to (1, 1, .... 1) */
-    kdata.init_x(&mut self.x[..]);
+    self.init_x();
 
     timers.stop(T_INIT);
 
@@ -202,7 +201,7 @@ impl ConjGrad for CGstate {
         println!("   {:>5}       {:>20.14e}{:>20.13e}", it, rnorm, zeta);
 
         /* normalize z to obtain x */
-        kdata.update_x(norm_temp2, &self.z[..], &mut self.x);
+        self.update_x(norm_temp2);
 
     } /* end of main iter inv pow meth */
 
@@ -314,6 +313,12 @@ fn conj_grad(self:&mut Self, rnorm: &mut f64,  timers: &mut Timer) {
 
         let mut kdata = KParams { FIRSTCOL: self.a.FIRSTCOL, LASTCOL: self.a.LASTCOL, NA: self.params.NA};
 
+        let cgitmax: i32 = 25;
+        let (mut d, mut rho, mut rho0, mut alpha, mut beta): (f64, f64, f64, f64, f64);
+
+        /* initialize the CG algorithm */
+        self.init_conj_grad();
+
         let colidx = &self.a.colidx[..];
         let rowstr = &self.a.rowstr[..];
         let x = &mut self.x[..];
@@ -322,12 +327,6 @@ fn conj_grad(self:&mut Self, rnorm: &mut f64,  timers: &mut Timer) {
         let p = &mut self.p[..];
         let q = &mut self.q[..];
         let r = &mut self.r[..];
-
-        let cgitmax: i32 = 25;
-        let (mut d, mut rho, mut rho0, mut alpha, mut beta): (f64, f64, f64, f64, f64);
-
-        /* initialize the CG algorithm */
-        kdata.init_conj_grad(&mut x[..], &mut q[..], &mut z[..], &mut r[..], &mut p[..]);
 
         /*
         * --------------------------------------------------------------------
@@ -434,6 +433,22 @@ fn conj_grad(self:&mut Self, rnorm: &mut f64,  timers: &mut Timer) {
 
     }
         
+    fn init_x(self: &mut Self) {
+        let NA = self.params.NA;
+        cg::init_x(&mut self.x[..], NA);
+    }
+    
+    fn update_x(self: &mut Self, norm_temp2: f64) { 
+        let COL_SIZE = self.a.LASTCOL - self.a.FIRSTCOL + 1;
+        cg::update_x(norm_temp2, &self.z[..], &mut self.x, COL_SIZE);
+    }
+
+    fn init_conj_grad(self: &mut Self) {
+        let COL_SIZE = self.a.LASTCOL - self.a.FIRSTCOL + 1;
+        cg::init_conj_grad(&mut self.x[..], &mut self.q[..], &mut self.z[..], &mut self.r[..], &mut self.p[..], COL_SIZE);
+    }
+    
+
 }
 
 struct KParams {
@@ -443,22 +458,6 @@ struct KParams {
 }
 
 impl Kernels for KParams {
-    fn init_x(self: &mut Self, x: &mut [f64]) {
-        let NA = self.NA;
-        cg::init_x(x, NA);
-    }
-    
-    fn update_x(self: &mut Self, norm_temp2: f64, z: &[f64], x: &mut Vec<f64>) { 
-        let COL_SIZE = self.LASTCOL - self.FIRSTCOL + 1;
-        cg::update_x(norm_temp2, z, x, COL_SIZE);
-    }
-
-    fn init_conj_grad(self: &mut Self, x: &mut [f64], q: &mut [f64], z: &mut [f64], r: &mut [f64], p: &mut [f64]) {
-        let COL_SIZE = self.LASTCOL - self.FIRSTCOL + 1;
-        cg::init_conj_grad(x, q, z, r, p, COL_SIZE);
-    }
-    
-    fn announce_platform(self: &mut Self) { cg::announce_platform(); }
     
     fn matvecmul(self: &mut Self, colidx: &[i32], rowstr: &[i32], a: &[f64], x: &[f64], y: &mut[f64]) {
         let COL_SIZE = self.LASTCOL - self.FIRSTCOL + 1;

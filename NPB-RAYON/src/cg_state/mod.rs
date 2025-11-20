@@ -41,7 +41,7 @@
 
     fn getparams() -> ClassParams
     {
-        let mut m = CURRENT_FEATURES.lock().unwrap();   
+        let m = CURRENT_FEATURES.lock().unwrap();   
         let actual_class = m.get("problemclass");
         actual_class.expect("classU").string().params()
     }

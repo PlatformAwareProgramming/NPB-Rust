@@ -44,12 +44,12 @@
             let nzz: usize = self.NZ();
 
             let mut colidx_d: Vec<i32> = self.alloc_colidx_d();
-            let mut colidx_h: Vec<i32> = self.alloc_colidx_h();
+            let     colidx_h: Vec<i32> = self.alloc_colidx_h();
             let mut colidx: Vec<i32> = colidx_h;
             let mut rowstr_d: Vec<i32> = self.alloc_rowstr_d();
-            let mut rowstr_h: Vec<i32> = self.alloc_rowstr_h();
+            let     rowstr_h: Vec<i32> = self.alloc_rowstr_h();
             let mut rowstr: Vec<i32> = rowstr_h;
-            let mut a_h: Vec<f64> = self.alloc_a_h();
+            let     a_h: Vec<f64> = self.alloc_a_h();
             let mut a_d: Vec<f64> = self.alloc_a_d();
             let mut a: Vec<f64> = a_h;
 
