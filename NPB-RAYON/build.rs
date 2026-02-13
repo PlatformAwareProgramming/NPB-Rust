@@ -3,7 +3,7 @@ use std::env;
 
 fn main() {
     // Define o diretório onde o Makefile está localizado
-    let kernel_dir = "src/kernels";
+    let kernel_dir = "src/cg_kernels";
 
     // Executa o Makefile para compilar a biblioteca C
     let make_status = Command::new("make")

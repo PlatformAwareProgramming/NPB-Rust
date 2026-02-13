@@ -1,95 +1,20 @@
 
-
 use std::{sync::Arc, env, error::Error, fs, path::Path};
 use ctor::ctor;
-use platform_aware_features::{insert_parameter, insert_feature, PlatformParameter, Feature, CURRENT_FEATURES};
+use platform_aware_features::{create_feature_hierarchy,insert_parameter, CURRENT_FEATURES};
 
-pub struct ProblemClass;
-
-impl Feature for ProblemClass { 
-    fn is_top(self:&Self) -> bool { true }
-    fn string(self:&Self) -> &'static str { "ProblemClass" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("problemclass".to_string()) } 
-}
-
-pub struct ClassS;
-
-impl Feature for ClassS {
-    fn string(&self) -> &'static str { "ClassS" }
-    fn supertype(&self) -> Option<Box<dyn Feature>> { Some(Box::new(ClassW)) }
-    fn feature_class(&self) -> Option<PlatformParameter> { Some("problemclass".to_string()) }
-}
-
-pub struct ClassW;
-
-impl Feature for ClassW {
-    fn string(&self) -> &'static str { "ClassW" }
-    fn supertype(&self) -> Option<Box<dyn Feature>> { Some(Box::new(ClassA)) }
-    fn feature_class(&self) -> Option<PlatformParameter> { Some("problemclass".to_string()) }
-}
-
-pub struct ClassA;
-
-impl Feature for ClassA {
-    fn string(&self) -> &'static str { "ClassA" }
-    fn supertype(&self) -> Option<Box<dyn Feature>> { Some(Box::new(ClassB)) }
-    fn feature_class(&self) -> Option<PlatformParameter> { Some("problemclass".to_string()) }
-}
-
-pub struct ClassB;
-
-impl Feature for ClassB {
-    fn string(&self) -> &'static str { "ClassB" }
-    fn supertype(&self) -> Option<Box<dyn Feature>> { Some(Box::new(ClassC)) }
-    fn feature_class(&self) -> Option<PlatformParameter> { Some("problemclass".to_string()) }
-}
-
-pub struct ClassC;
-
-impl Feature for ClassC {
-    fn string(&self) -> &'static str { "ClassC" }
-    fn supertype(&self) -> Option<Box<dyn Feature>> { Some(Box::new(ClassD)) }
-    fn feature_class(&self) -> Option<PlatformParameter> { Some("problemclass".to_string()) }
-}
-
-pub struct ClassD;
-
-impl Feature for ClassD {
-    fn string(&self) -> &'static str { "ClassD" }
-    fn supertype(&self) -> Option<Box<dyn Feature>> { Some(Box::new(ClassE)) }
-    fn feature_class(&self) -> Option<PlatformParameter> { Some("problemclass".to_string()) }
-}
-
-pub struct ClassE;
-
-impl Feature for ClassE {
-    fn string(&self) -> &'static str { "ClassE" }
-    fn supertype(&self) -> Option<Box<dyn Feature>> { Some(Box::new(ClassF)) }
-    fn feature_class(&self) -> Option<PlatformParameter> { Some("problemclass".to_string()) }
-}
-
-pub struct ClassF;
-
-impl Feature for ClassF {
-    fn string(&self) -> &'static str { "ClassF" }
-    fn supertype(&self) -> Option<Box<dyn Feature>> { Some(Box::new(ProblemClass)) }
-    fn feature_class(&self) -> Option<PlatformParameter> { Some("problemclass".to_string()) }
-}
-
+create_feature_hierarchy! {  register_features ;"problemclass" : None :> ProblemClass :> Class_F :> 
+                                                                                         Class_E :> 
+                                                                                         Class_D :> 
+                                                                                         Class_C :> 
+                                                                                         Class_B :> 
+                                                                                         Class_A :> 
+                                                                                         Class_W :> 
+                                                                                         Class_S; }
 
 
 #[ctor]
-fn module_initializer() {
-
-        insert_feature(Arc::new(ProblemClass));
-        insert_feature(Arc::new(ClassS));
-        insert_feature(Arc::new(ClassW));
-        insert_feature(Arc::new(ClassA));
-        insert_feature(Arc::new(ClassB));
-        insert_feature(Arc::new(ClassC));
-        insert_feature(Arc::new(ClassD));
-        insert_feature(Arc::new(ClassE));
-        insert_feature(Arc::new(ClassF));
+fn insert_problem_class() {
 
         insert_parameter("problemclass".to_string(), Arc::new(ProblemClass));
 

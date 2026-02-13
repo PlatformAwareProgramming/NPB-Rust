@@ -97,219 +97,219 @@ impl ConjGrad for CGstate {
 
     fn cg(self: &mut Self, mut timers: Timer) {
 
-    let mut zeta: f64 = 0.0;
-    let mut rnorm: f64 = 0.0;
-    let (mut norm_temp1, mut norm_temp2): (f64, f64);
-    let (mut t, mops, mut tmax): (f64, f64, f64);
-    let verified: i8;       
+        let mut zeta: f64 = 0.0;
+        let mut rnorm: f64 = 0.0;
+        let (mut norm_temp1, mut norm_temp2): (f64, f64);
+        let (mut t, mops, mut tmax): (f64, f64, f64);
+        let verified: i8;       
 
-    print!("\n\n NAS Parallel Benchmarks 4.1 Parallel Rust version with Rayon - CG Benchmark\n\n");
-    
-    let NA = self.params.NA;
-    let NITER = self.params.NITER;
-    let NONZER = self.params.NONZER;
-    let SHIFT = self.params.SHIFT;
-    let CLASS = self.params.CLASS;
-    let ZETA_VERIFY = self.params.ZETA_VERIFY;
+        print!("\n\n NAS Parallel Benchmarks 4.1 Parallel Rust version with Rayon - CG Benchmark\n\n");
+        
+        let NA = self.params.NA;
+        let NITER = self.params.NITER;
+        let NONZER = self.params.NONZER;
+        let SHIFT = self.params.SHIFT;
+        let CLASS = self.params.CLASS;
+        let ZETA_VERIFY = self.params.ZETA_VERIFY;
 
-    print!(" Size: {:>11}\n", self.params.NA);
-    print!(" Iterations: {:>5}\n", self.params.NITER);
+        print!(" Size: {:>11}\n", self.params.NA);
+        print!(" Iterations: {:>5}\n", self.params.NITER);
 
-    let mut kdata = KParams { FIRSTCOL: self.a.FIRSTCOL, LASTCOL: self.a.LASTCOL, NA: self.params.NA};
+        let mut kdata = KParams { FIRSTCOL: self.a.FIRSTCOL, LASTCOL: self.a.LASTCOL, NA: self.params.NA};
 
-    self.announce_platform();
+        self.announce_platform();
 
-    /*
-    * -------------------------------------------------------------------
-    * ---->
-    * do one iteration untimed to init all code and data page tables
-    * ----> (then reinit, start timing, to niter its)
-    * -------------------------------------------------------------------*/
-    for _ in 0..1 {
-        /* the call to the conjugate gradient routine */
-        self.conj_grad(&mut rnorm, &mut timers);
+        /*
+        * -------------------------------------------------------------------
+        * ---->
+        * do one iteration untimed to init all code and data page tables
+        * ----> (then reinit, start timing, to niter its)
+        * -------------------------------------------------------------------*/
+        for _ in 0..1 {
+            /* the call to the conjugate gradient routine */
+            self.conj_grad(&mut rnorm, &mut timers);
+
+            /*
+            * --------------------------------------------------------------------
+            * zeta = shift + 1/(x.z)
+            * so, first: (x.z)
+            * also, find norm of z
+            * so, first: (z.z)
+            * --------------------------------------------------------------------
+            */
+
+        
+            norm_temp2 = kdata.vecvecmul(&self.z[..], &self.z[..]);
+            norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
+
+            /* normalize z to obtain x */
+            self.update_x(norm_temp2);
+        } /* end of do one iteration untimed */
+
+        /* set starting vector to (1, 1, .... 1) */
+        self.init_x();
+
+        timers.stop(T_INIT);
+
+        print!(
+            " Initialization time = {:>15.3} seconds\n",
+            timers.read(T_INIT).as_secs_f64()
+        );
+
+        timers.start(T_BENCH);
+
+        timers.clear(T_VECVECMUL);
+        timers.clear(T_MATVECMUL);
 
         /*
         * --------------------------------------------------------------------
-        * zeta = shift + 1/(x.z)
-        * so, first: (x.z)
-        * also, find norm of z
-        * so, first: (z.z)
+        * ---->
+        * main iteration for inverse power method
+        * ---->
         * --------------------------------------------------------------------
         */
+        for it in 1..NITER + 1 {
+            /* the call to the conjugate gradient routine */
+            if TIMERS {
+                timers.start(T_CONJ_GRAD);
+            }
 
-    
-        norm_temp2 = kdata.vecvecmul(&self.z[..], &self.z[..]);
-        norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
+            self.conj_grad(&mut rnorm, &mut timers);
 
-        /* normalize z to obtain x */
-        self.update_x(norm_temp2);
-    } /* end of do one iteration untimed */
+            if TIMERS {
+                timers.stop(T_CONJ_GRAD);
+            }
 
-    /* set starting vector to (1, 1, .... 1) */
-    self.init_x();
+            /*
+            * --------------------------------------------------------------------
+            * zeta = shift + 1/(x.z)
+            * so, first: (x.z)
+            * also, find norm of z
+            * so, first: (z.z)
+            * --------------------------------------------------------------------
+            */
 
-    timers.stop(T_INIT);
+            norm_temp1 = kdata.vecvecmul(&self.x[..], &self.z[..]);
+            norm_temp2 = kdata.vecvecmul(&self.z[..], &self.z[..]);
 
-    print!(
-        " Initialization time = {:>15.3} seconds\n",
-        timers.read(T_INIT).as_secs_f64()
-    );
+            norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
 
-    timers.start(T_BENCH);
+            zeta = SHIFT + 1.0 / norm_temp1;
+            if it == 1 {
+                println!("\n   iteration             ||r||                 zeta");
+            }
+            println!("   {:>5}       {:>20.14e}{:>20.13e}", it, rnorm, zeta);
 
-    timers.clear(T_VECVECMUL);
-    timers.clear(T_MATVECMUL);
+            /* normalize z to obtain x */
+            self.update_x(norm_temp2);
 
-    /*
-    * --------------------------------------------------------------------
-    * ---->
-    * main iteration for inverse power method
-    * ---->
-    * --------------------------------------------------------------------
-    */
-    for it in 1..NITER + 1 {
-        /* the call to the conjugate gradient routine */
-        if TIMERS {
-            timers.start(T_CONJ_GRAD);
-        }
+        } /* end of main iter inv pow meth */
 
-        self.conj_grad(&mut rnorm, &mut timers);
-
-        if TIMERS {
-            timers.stop(T_CONJ_GRAD);
-        }
+        timers.stop(T_BENCH);
 
         /*
         * --------------------------------------------------------------------
-        * zeta = shift + 1/(x.z)
-        * so, first: (x.z)
-        * also, find norm of z
-        * so, first: (z.z)
+        * end of timed section
         * --------------------------------------------------------------------
         */
+        t = timers.read(T_BENCH).as_secs_f64();
 
-        norm_temp1 = kdata.vecvecmul(&self.x[..], &self.z[..]);
-        norm_temp2 = kdata.vecvecmul(&self.z[..], &self.z[..]);
+        print!(" Benchmark completed\n");
 
-        norm_temp2 = 1.0 / f64::sqrt(norm_temp2);
-
-        zeta = SHIFT + 1.0 / norm_temp1;
-        if it == 1 {
-            println!("\n   iteration             ||r||                 zeta");
-        }
-        println!("   {:>5}       {:>20.14e}{:>20.13e}", it, rnorm, zeta);
-
-        /* normalize z to obtain x */
-        self.update_x(norm_temp2);
-
-    } /* end of main iter inv pow meth */
-
-    timers.stop(T_BENCH);
-
-    /*
-    * --------------------------------------------------------------------
-    * end of timed section
-    * --------------------------------------------------------------------
-    */
-    t = timers.read(T_BENCH).as_secs_f64();
-
-    print!(" Benchmark completed\n");
-
-    if CLASS != 'U' {
-        let err = f64::abs(zeta - ZETA_VERIFY) / ZETA_VERIFY;
-        if err <= EPSILON {
-            verified = 1;
-            print!(" VERIFICATION SUCCESSFUL {}\n", EPSILON);
-            print!(" Zeta is    {:+20.13e}\n", zeta);
-            print!(" Error is   {:+20.13e}\n", err);
+        if CLASS != 'U' {
+            let err = f64::abs(zeta - ZETA_VERIFY) / ZETA_VERIFY;
+            if err <= EPSILON {
+                verified = 1;
+                print!(" VERIFICATION SUCCESSFUL {}\n", EPSILON);
+                print!(" Zeta is    {:+20.13e}\n", zeta);
+                print!(" Error is   {:+20.13e}\n", err);
+            } else {
+                verified = 0;
+                print!(" VERIFICATION FAILED{}\n", EPSILON);
+                print!(" Zeta                {:+20.13e}\n", zeta);
+                print!(" The correct zeta is {:+20.13e}\n", ZETA_VERIFY);
+            }
         } else {
             verified = 0;
-            print!(" VERIFICATION FAILED{}\n", EPSILON);
-            print!(" Zeta                {:+20.13e}\n", zeta);
-            print!(" The correct zeta is {:+20.13e}\n", ZETA_VERIFY);
+            print!(" Problem size unknown\n");
+            print!(" NO VERIFICATION PERFORMED\n");
         }
-    } else {
-        verified = 0;
-        print!(" Problem size unknown\n");
-        print!(" NO VERIFICATION PERFORMED\n");
-    }
-    if t != 0.0 {
-        mops = ((NITER << 1) * NA) as f64
-            * (3.0
-                + (NONZER * (NONZER + 1)) as f64
-                + 25.0 * (5.0 + (NONZER * (NONZER + 1)) as f64)
-                + 3.0)
-            / t
-            / 1000000.0;
-    } else {
-        mops = 0.0;
-    }
-
-    let info = PrintInfo {
-        name: String::from("CG"),
-        class: CLASS.to_string(),
-        size: (NA as usize, 0, 0),
-        num_iter: NITER,
-        time: t,
-        mops,
-        operation: String::from("Floating Point"),
-        verified,
-        num_threads: rayon::current_num_threads() as u32,
-        //uns: UNSAFE
-    };
-    printer(info);
-
-
-    println!("VECVECMUL timing: {}", timers.read(T_VECVECMUL).as_secs_f64());
-    println!("MATVECMUL timing: {}", timers.read(T_MATVECMUL).as_secs_f64());
-
-    /*
-    * ---------------------------------------------------------------------
-    * more timers
-    * ---------------------------------------------------------------------
-    */
-    if TIMERS {
-        let mut t_names: Vec<String> = vec![String::new(); 3];
-        t_names[T_INIT] = String::from("init");
-        t_names[T_BENCH] = String::from("benchmk");
-        t_names[T_CONJ_GRAD] = String::from("conjgd");
-
-        tmax = timers.read(T_BENCH).as_secs_f64();
-        if tmax == 0.0 {
-            tmax = 1.0;
+        if t != 0.0 {
+            mops = ((NITER << 1) * NA) as f64
+                * (3.0
+                    + (NONZER * (NONZER + 1)) as f64
+                    + 25.0 * (5.0 + (NONZER * (NONZER + 1)) as f64)
+                    + 3.0)
+                / t
+                / 1000000.0;
+        } else {
+            mops = 0.0;
         }
-        print!("  SECTION   Time (secs)\n");
-        for i in 0..T_LAST {
-            t = timers.read(i).as_secs_f64();
-            if i == T_INIT {
-                print!("  {:>8}:{:>9.3}\n", t_names[i], t);
-            } else {
-                print!(
-                    "  {:>8}:{:>9.3}  ({:>6.2}%)\n",
-                    t_names[i],
-                    t,
-                    t * 100.0 / tmax
-                );
-                if i == T_CONJ_GRAD {
-                    t = tmax - t;
+
+        let info = PrintInfo {
+            name: String::from("CG"),
+            class: CLASS.to_string(),
+            size: (NA as usize, 0, 0),
+            num_iter: NITER,
+            time: t,
+            mops,
+            operation: String::from("Floating Point"),
+            verified,
+            num_threads: rayon::current_num_threads() as u32,
+            //uns: UNSAFE
+        };
+        printer(info);
+
+
+        println!("VECVECMUL timing: {}", timers.read(T_VECVECMUL).as_secs_f64());
+        println!("MATVECMUL timing: {}", timers.read(T_MATVECMUL).as_secs_f64());
+
+        /*
+        * ---------------------------------------------------------------------
+        * more timers
+        * ---------------------------------------------------------------------
+        */
+        if TIMERS {
+            let mut t_names: Vec<String> = vec![String::new(); 3];
+            t_names[T_INIT] = String::from("init");
+            t_names[T_BENCH] = String::from("benchmk");
+            t_names[T_CONJ_GRAD] = String::from("conjgd");
+
+            tmax = timers.read(T_BENCH).as_secs_f64();
+            if tmax == 0.0 {
+                tmax = 1.0;
+            }
+            print!("  SECTION   Time (secs)\n");
+            for i in 0..T_LAST {
+                t = timers.read(i).as_secs_f64();
+                if i == T_INIT {
+                    print!("  {:>8}:{:>9.3}\n", t_names[i], t);
+                } else {
                     print!(
-                        "    --> {:>8}:{:>9.3}  ({:>6.2}%)\n",
-                        "rest",
+                        "  {:>8}:{:>9.3}  ({:>6.2}%)\n",
+                        t_names[i],
                         t,
                         t * 100.0 / tmax
                     );
+                    if i == T_CONJ_GRAD {
+                        t = tmax - t;
+                        print!(
+                            "    --> {:>8}:{:>9.3}  ({:>6.2}%)\n",
+                            "rest",
+                            t,
+                            t * 100.0 / tmax
+                        );
+                    }
                 }
             }
         }
+
+        ClassParams::freevectors();
+
+
     }
 
-    ClassParams::freevectors();
-
-
-}
-
-fn conj_grad(self:&mut Self, rnorm: &mut f64,  timers: &mut Timer) {
+    fn conj_grad(self:&mut Self, rnorm: &mut f64,  timers: &mut Timer) {
 
         let mut kdata = KParams { FIRSTCOL: self.a.FIRSTCOL, LASTCOL: self.a.LASTCOL, NA: self.params.NA};
 
@@ -624,7 +624,7 @@ mod cg {
                                                 acc_cudatoolkit=(AtLeast{val:90}), 
                                                 acc_cudacc=(AtLeast{val:70}), 
                                                 acc_cudadriver=(AtLeast{val:38481}), 
-                                                problemclass = ClassC)]  // 384.81 -- ...
+                                                problemclass = Class_C)]  // 384.81 -- ...
     pub fn announce_platform() { println!("=======> CUDA 3") }
 
     // y = a * x (sequential)
@@ -650,7 +650,8 @@ mod cg {
                 .zip(&colidx[*j as usize..*j1 as usize])
                 .map(|(a, colidx)| a * x[*colidx as usize])
                 .sum();
-        });    }
+        });    
+    }
 
     // y = a * x (multithread)
     #[kernelversion(cpu_core_count=(AtLeast{val:2}))]

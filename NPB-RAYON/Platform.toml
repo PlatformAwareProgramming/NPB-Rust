@@ -1,5 +1,5 @@
 [kernel]
-problemclass = "ClassC" 
+problemclass = "Class_C" 
 
 [accelerator]
 acc_manufacturer = "NVIDIA"
