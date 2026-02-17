@@ -1,0 +1,41 @@
+[kernel]
+problemclass = "Class_A" 
+
+[accelerator]
+acc_manufacturer = "NVIDIA"
+acc_memory_type = "GDDR6"
+acc_count = 1
+acc_backend = ["CUDA","OpenCL_3_0","OpenGL_4_6","Vulkan_1_3","DirectX_12_2"]
+acc_cudatoolkit=90
+acc_cudacc=86                      # minimum between GPUs's compute capability (86) and supported by installed driver (90)
+acc_cudadriver = 57000             # 570.133.07 -- required by the GPU: 460
+acc_architecture = "Ampere"
+acc_model = "NVidiaMTX570A"
+acc_cpu_count = 1
+acc_processor = "GA107SB"
+acc_memory_size = 2048    # 2GB
+acc_tdp = 25
+acc_type = "GPU"
+# source: https://www.techpowerup.com/gpu-specs/geforce-mx570-a.c3943
+
+[processor]
+cpu_core_count = 12
+cpu_count = 1
+cpu_core_threads_count = 2
+cpu_simd = ["AVX2"]
+cpu_L2_size = 262144
+cpu_L3_size = 4194304
+cpu_L1_size = 32768
+cpu_core_clock = 2900
+cpu_manufacturer = "Intel"
+cpu_isa = "ISA_x86_64_v3"
+cpu_tdp = 15
+cpu_model = "IntelCore_i7_7500U"
+cpu_microarchitecture = "KabyLake"
+
+[memory]
+mem_frequency = 2400
+mem_size = 17179
+# mem_latency = 0
+mem_type = "DDR4"
+mem_bandwidth = 2133

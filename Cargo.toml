@@ -1,0 +1,58 @@
+[package]
+    name = "npb-rust-par"
+    version = "0.1.0"
+    edition = "2024"
+    build = "build.rs"
+
+[profile.release]
+    opt-level = 3
+    debug = false
+    strip = true
+    codegen-units = 1
+    lto = "fat"
+    panic = "abort"
+
+[[bin]]
+    name = "bt"
+    path = "src/bt.rs"
+[[bin]]
+    name = "ep"
+    path = "src/ep.rs"
+[[bin]]
+    name = "cg"
+    path = "src/cg.rs"
+[[bin]]
+    name = "ft"
+    path = "src/ft.rs"
+[[bin]]
+    name = "is"
+    path = "src/is.rs"
+[[bin]]
+    name = "lu"
+    path = "src/lu.rs"
+[[bin]]
+    name = "mg"
+    path = "src/mg.rs"
+[[bin]]
+    name = "sp"
+    path = "src/sp.rs"
+
+[dependencies]
+rayon = "1.10"
+platform-aware = { path = "../platform-aware"}
+platform-aware-amd = { path = "../platform-aware/platform-aware-amd"}
+platform-aware-intel = { path = "../platform-aware/platform-aware-intel"}
+platform-aware-nvidia = { path = "../platform-aware/platform-aware-nvidia"}
+platform-aware-features = { path = "../platform-aware/platform-aware-features"}
+configurable-features = {path = "../configurable-features"}
+paste = "1.0"
+lazy_static = "1.5.0"
+ctor = "0.6.1"
+toml = "0.9.5"
+serde = "1.0.219"
+
+[lints.rust]
+ unexpected_cfgs = {level = "warn", check-cfg = ['cfg(class,values("S","W","A","B","C","D","E","F"))','cfg(safe,values("true"))','cfg(timers,values("true"))']}
+
+[package.metadata.system-dependencies]
+dot_product = { name = "dot_product", lib = "dot_product", header = "src/cg_kernels/dot_product.h" }
