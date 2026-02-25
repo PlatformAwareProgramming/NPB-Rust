@@ -13,29 +13,8 @@
     panic = "abort"
 
 [[bin]]
-    name = "bt"
-    path = "src/bt.rs"
-[[bin]]
-    name = "ep"
-    path = "src/ep.rs"
-[[bin]]
     name = "cg"
     path = "src/cg.rs"
-[[bin]]
-    name = "ft"
-    path = "src/ft.rs"
-[[bin]]
-    name = "is"
-    path = "src/is.rs"
-[[bin]]
-    name = "lu"
-    path = "src/lu.rs"
-[[bin]]
-    name = "mg"
-    path = "src/mg.rs"
-[[bin]]
-    name = "sp"
-    path = "src/sp.rs"
 
 [dependencies]
 rayon = "1.10"
@@ -53,6 +32,3 @@ serde = "1.0.219"
 
 [lints.rust]
  unexpected_cfgs = {level = "warn", check-cfg = ['cfg(class,values("S","W","A","B","C","D","E","F"))','cfg(safe,values("true"))','cfg(timers,values("true"))']}
-
-[package.metadata.system-dependencies]
-dot_product = { name = "dot_product", lib = "dot_product", header = "src/cg_kernels/dot_product.h" }
